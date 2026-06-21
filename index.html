@@ -451,7 +451,16 @@
       // surface from the normal map; moderate so it reads as crystal without being noisy/taxing (text has its own material)
       const txN=snowNormal.clone(); txN.needsUpdate=true; txN.wrapS=txN.wrapT=THREE.RepeatWrapping; txN.repeat.set(2.4,2.4);
       core.material.normalMap=txN; core.material.normalScale.set(0.7,0.7); core.material.clearcoatNormalScale.set(0.26,0.26);
-      core.material.dispersion=0.32; core.material.iridescence=0.12; core.material.needsUpdate=true; }
+      core.material.dispersion=0.32; core.material.iridescence=0.12;
+      // RYNH is tinted by a gradient of ALL 6 service colours across the letters -> the services are what make up RYNH
+      g.computeBoundingBox(); const _bb=g.boundingBox, _x0=_bb.min.x, _xw=(_bb.max.x-_bb.min.x)||1;
+      const COLS=SERVICES.map(s=>new THREE.Color(s.accent)), _pa=g.attributes.position, _vc=new Float32Array(_pa.count*3), _ca=new THREE.Color(), _cb=new THREE.Color();
+      for(let i=0;i<_pa.count;i++){ const tt=(_pa.getX(i)-_x0)/_xw, xx=tt*(COLS.length-1), kk=Math.min(Math.floor(xx),COLS.length-2);
+        _ca.copy(COLS[kk]).lerp(_cb.copy(COLS[kk+1]),xx-kk); _vc[i*3]=_ca.r; _vc[i*3+1]=_ca.g; _vc[i*3+2]=_ca.b; }
+      g.setAttribute('color',new THREE.BufferAttribute(_vc,3));
+      core.material.vertexColors=true; core.material.attenuationColor=new THREE.Color(0xffffff);   // neutral glass so the gradient reads cleanly
+      core.material.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('vec3 totalEmissiveRadiance = emissive;','vec3 totalEmissiveRadiance = emissive + vColor * 0.55;'); };  // glow the gradient through the glass
+      core.material.needsUpdate=true; }
 
     const R=4.3, phi=Math.PI*(3-Math.sqrt(5));
     // crystalline ice cube: rounded box with subtle "grown ice" vertex displacement
@@ -530,6 +539,7 @@
     scene.add(new THREE.AmbientLight(0x223355,0.4));
     // one shared light parked at the active chamber's centre on dive -> lights the inner walls so they read as bright frosted ice, not black
     const chamberLight=new THREE.PointLight(0xeaf4ff,0,4.5,1.5); scene.add(chamberLight);
+    const CHL_PEAK=5, CHL_REST=2.5;   // chamber light: bright on the reveal, eased down to a dim moody rest
 
     const V=(x,y,z)=>new THREE.Vector3(x,y,z);
     const camState={x:0,y:1.5,z:16,tx:0,ty:0,tz:0};
@@ -633,7 +643,7 @@
     // walls show ONLY while the camera is actually inside the shell -> never bleed outside, on enter OR exit
     function setInterior(cube,w){ const u=cube.userData; if(!u.interior)return;
       u.interior.walls.material.opacity=w; u.interior.glow.material.opacity=w*0.95;
-      const c=new THREE.Vector3(); cube.getWorldPosition(c); chamberLight.position.copy(c); chamberLight.intensity=w*5; }
+      const c=new THREE.Vector3(); cube.getWorldPosition(c); chamberLight.position.copy(c); }  // intensity is paced separately so the lights can dim as we settle in
     function camInsideness(cube){ const c=new THREE.Vector3(); cube.getWorldPosition(c);
       const dist=Math.hypot(camState.x-c.x,camState.y-c.y,camState.z-c.z);
       const rIn=cube.userData.isCore?0.55:0.38, rOut=cube.userData.isCore?1.25:0.62;
@@ -659,7 +669,7 @@
       if(reduce){ camState.x=toP.x;camState.y=toP.y;camState.z=toP.z;camState.tx=target.x;camState.ty=target.y;camState.tz=target.z; if(!isCore){applyDissolve(cube,1);setInterior(cube,1);} setSceneDim(1); finishIn(cube); dive=null; }
     }
     function finishIn(cube){ mode='DETAIL';
-      if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); }   // lock the resting chamber: shell gone, walls full
+      if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); chamberLight.intensity=CHL_REST; }   // lock the resting chamber: shell gone, walls full, lights dimmed
       detailBase={x:camState.x,y:camState.y,z:camState.z,tx:camState.tx,ty:camState.ty,tz:camState.tz}; openPanel(cube.userData.project); }
     function exitDive(){
       if(mode!=='DETAIL')return; mode='EXITING'; closePanel(); detailBase=null; sfx.whoosh(1);
@@ -669,7 +679,7 @@
       if(reduce){ if(!dive.core){applyDissolve(lastCube,0);setInterior(lastCube,0);} setSceneDim(0); finishOut(); dive=null; }
     }
     function finishOut(){ mode='CLUSTER'; document.body.style.overflow=''; document.body.classList.remove('detail');
-      if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false; lastCube.userData.interior.glow.visible=false; } }
+      if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false; lastCube.userData.interior.glow.visible=false; } chamberLight.intensity=0; }
     function updateDive(){
       if(!dive)return;
       const k=dive.dur?clamp((performance.now()-dive.t0)/dive.dur,0,1):1, e=dive.phase==='in'?easeOutCubic(k):easeInOutCubic(k);
@@ -677,8 +687,11 @@
       camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z;
       if(!dive.core){ const cc=new THREE.Vector3(); dive.cube.getWorldPosition(cc);
         const dist=Math.hypot(camState.x-cc.x,camState.y-cc.y,camState.z-cc.z);
-        setInterior(dive.cube, clamp(1-(dist-0.9)/(1.4-0.9),0,1));     // walls full by the time we cross the 0.9 wall, fade in over the approach
-        applyDissolve(dive.cube, clamp((1.5-dist)/0.6,0,1)); }         // shell fully gone before we reach the 0.7 standoff
+        const w=clamp(1-(dist-0.9)/(1.4-0.9),0,1);
+        setInterior(dive.cube, w);                                      // walls/glow fade in by proximity
+        applyDissolve(dive.cube, clamp((1.5-dist)/0.6,0,1));            // shell gone before the standoff
+        const dimP=dive.phase==='in'?easeInOutCubic(clamp((k-0.4)/0.6,0,1)):1;  // lights come up on the reveal, then DIM down over the back half of the dive-in
+        chamberLight.intensity=w*lerp(CHL_PEAK,CHL_REST,dimP); }
       setSceneDim(dive.phase==='in'?clamp((e-0.1)/0.7,0,1):clamp(1-e,0,1));
       if(bloom)bloom.strength=dive.phase==='in'?lerp(0.55,0.38,e):lerp(0.38,0.55,e);
       if(k>=1){ if(dive.phase==='in'){ const c=dive.cube; dive=null; finishIn(c); } else { dive=null; finishOut(); } }
