@@ -63,6 +63,7 @@
   #beat-hero h1 em{font-style:normal;-webkit-text-fill-color:var(--accent);color:var(--accent)}
   #beat-hero p{margin-top:24px;color:#eef4fc;font-size:clamp(15px,2vw,19px);max-width:46ch;text-shadow:0 1px 12px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.5)}
   .beat.mid{top:50%;transform:translateY(-50%);text-align:center}
+  #beat-2{top:20vh;transform:none}
   .beat.mid h2{font-family:"Space Grotesk";font-weight:600;font-size:clamp(26px,4.5vw,46px);margin:0;letter-spacing:-.01em;
     background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(190,222,255,.6));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
     filter:drop-shadow(0 2px 26px rgba(120,180,255,.28)) drop-shadow(0 1px 2px rgba(0,0,0,.5))}
@@ -572,11 +573,14 @@
       tgtCurve=new THREE.CatmullRomCurve3(tt,false,'centripetal',0.5);
     }
     buildTour();
+    function warp(p){ const A=[[0,0],[0.09,0.125],[0.34,0.25],[1,1]];     // SLOW the RYNH->first-cube band: scroll 0.09-0.34 spans curve 0.125-0.25 (time to read + click before D&A)
+      for(let i=1;i<A.length;i++){ if(p<=A[i][0]){ const t=(p-A[i-1][0])/(A[i][0]-A[i-1][0]); return A[i-1][1]+t*(A[i][1]-A[i-1][1]); } } return 1; }
     function clusterCam(p){
-      posCurve.getPoint(clamp(p,0,1),tmpP); tgtCurve.getPoint(clamp(p,0,1),tmpT);
-      const n=tourCubes.length, np=n+3, cp=clamp(p,0,1), idx=Math.round(cp*(np-1));  // control pts: 0=hero, 1=RYNH, 2..n+1=cubes, n+2=contact
-      centerCube = idx===1 ? core : (idx>=2&&idx<=n+1 ? tourCubes[idx-2] : null);  // label: RYNH at the fly-past, else the cube we're passing
-      ryW=clamp(1-Math.abs(cp-1/(np-1))/0.07,0,1);                         // 1 when we're at the RYNH fly-past -> damp its sway so it faces the camera squarely
+      const u=warp(clamp(p,0,1));
+      posCurve.getPoint(u,tmpP); tgtCurve.getPoint(u,tmpT);
+      const n=tourCubes.length, np=n+3, idx=Math.round(u*(np-1));          // control pts: 0=hero, 1=RYNH, 2..n+1=cubes, n+2=contact
+      centerCube = idx===1 ? core : (idx>=2&&idx<=n+1 ? tourCubes[idx-2] : null);
+      ryW=clamp(1-Math.abs(u-1/(np-1))/0.07,0,1);                          // 1 at the RYNH face-on spot -> sway damped
     }
 
     let composer=null,bloom=null,bokeh=null,grade=null;
@@ -615,11 +619,11 @@
     const hint=document.getElementById('hint');
     const win=(p,a,b,f=0.05)=>clamp(Math.min((p-a)/f,(b-p)/f),0,1);
     function updateCaptions(p){
-      beats.hero.style.opacity=win(p,-1,0.07,0.06);
-      beats.b2.style.opacity=win(p,0.08,0.22);        // "an engineer who reads the business" lands as we scroll past RYNH
-      beats.b1.style.opacity=win(p,0.27,0.82);        // "six ways + click to look inside" persists through the cube tour
+      beats.hero.style.opacity=win(p,-1,0.05,0.05);
+      beats.b2.style.opacity=win(p,0.035,0.17);       // "engineering that reads the business" sits above RYNH at its face-on spot
+      beats.b1.style.opacity=win(p,0.19,0.85);        // "click a cube to look inside" appears BEFORE we reach the D&A cube, holds through the tour
       const cop=win(p,0.90,1.2,0.06); beats.contact.style.opacity=cop; contactCta.style.pointerEvents=cop>0.5?'auto':'none';   // only clickable when the contact section is actually shown (full-height overlay otherwise eats clicks)
-      hint.style.opacity=p<0.05?1:0;
+      hint.style.opacity=p<0.04?1:0;
     }
 
     const raycaster=new THREE.Raycaster();
@@ -634,9 +638,9 @@
       clickable.forEach(c=>{ const on=c===hovered;
         c.material.emissiveIntensity=lerp(c.material.emissiveIntensity,on?1.1:0,0.1);
         c.scale.setScalar(lerp(c.scale.x,on?1.07:1,0.1)); });
-      const lbl=hovered||centerCube;   // label the hovered cube, or the one the scroll has centred (never RYNH)
-      if(lbl&&!lbl.userData.isCore){ const w=new THREE.Vector3(); lbl.getWorldPosition(w); w.project(camera);
-        label.textContent=lbl.userData.project.title;
+      const lbl=hovered||centerCube;   // label the hovered/centred cube; RYNH reads "About Us" so its clickability is obvious
+      if(lbl){ const w=new THREE.Vector3(); lbl.getWorldPosition(w); w.project(camera);
+        label.textContent=lbl.userData.isCore?'About Us':lbl.userData.project.title;
         label.style.left=((w.x*0.5+0.5)*innerWidth)+'px'; label.style.top=((-w.y*0.5+0.5)*innerHeight)+'px';
         label.classList.add('show'); } else label.classList.remove('show');
     }
