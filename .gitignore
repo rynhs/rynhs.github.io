@@ -1,5 +1,5 @@
-# local working artifacts, not needed for the deployed site
+# local working/source artifacts — the deployed site is a single self-contained index.html
 backups/
 models/
-textures/snow_rough_1k.jpg
+textures/
 .DS_Store
