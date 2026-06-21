@@ -93,9 +93,9 @@
   #detail .scrim{position:absolute;inset:0;background:radial-gradient(135% 110% at 50% 50%, transparent 52%, rgba(4,7,12,.5) 100%)}
   #detail .card{position:relative;width:min(540px,100%);border-radius:26px;padding:40px 38px;overflow:hidden;
     border:1px solid rgba(255,255,255,.5);
-    background:linear-gradient(150deg, rgba(74,96,134,.22), rgba(48,66,102,.13));   /* consistent semi-opaque base so the card reads the SAME across Mac/Windows (not driven by platform-variable backdrop) */
-    backdrop-filter:blur(26px) saturate(150%) brightness(1.04);
-    -webkit-backdrop-filter:blur(26px) saturate(150%) brightness(1.04);
+    background:linear-gradient(150deg, rgba(60,80,116,.34), rgba(40,56,88,.22));   /* more-opaque consistent base so the card reads the SAME on Mac/Windows (its own colour, not the platform-variable backdrop) */
+    backdrop-filter:blur(24px) saturate(140%);
+    -webkit-backdrop-filter:blur(24px) saturate(140%);
     box-shadow:0 40px 100px rgba(0,0,0,.42), inset 1.5px 1.5px 0 rgba(255,255,255,.55), inset -1px -1px 2px rgba(170,205,255,.28), inset 0 0 90px rgba(150,200,255,.08);
     transform-style:preserve-3d;will-change:transform}
   #detail .card::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;
@@ -445,11 +445,11 @@
     // RYNH crystal in Syncopate: converted to a three.js typeface (subset R,Y,N,H) and inlined so it stays offline/single-file
     const SYNCOPATE_RYNH={"glyphs":{"R":{"ha":1892,"x_min":215,"x_max":1841,"o":"m 586 506 l 586 0 l 215 0 l 215 1374 l 1145 1374 q 1400 1343 1295 1374 q 1570 1255 1504 1312 q 1665 1118 1635 1198 q 1694 938 1694 1037 l 1694 938 q 1670 786 1694 851 q 1604 675 1645 721 q 1507 596 1562 628 q 1391 543 1452 564 l 1391 543 l 1841 0 l 1407 0 l 991 506 l 586 506 m 1319 940 l 1319 940 q 1309 1008 1319 980 q 1272 1054 1298 1036 q 1203 1079 1246 1071 q 1094 1087 1159 1087 l 1094 1087 l 586 1087 l 586 793 l 1094 793 q 1203 801 1159 793 q 1272 827 1246 809 q 1309 872 1298 844 q 1319 940 1319 900"},"Y":{"ha":1784,"x_min":41,"x_max":1743,"o":"m 1743 1374 l 1077 561 l 1077 0 l 707 0 l 707 561 l 41 1374 l 457 1374 l 893 821 l 1327 1374 l 1743 1374"},"N":{"ha":2130,"x_min":215,"x_max":1915,"o":"m 1915 0 l 1513 0 l 586 944 l 586 0 l 215 0 l 215 1374 l 618 1374 l 1546 426 l 1546 1374 l 1915 1374 l 1915 0"},"H":{"ha":2116,"x_min":215,"x_max":1901,"o":"m 1901 0 l 1530 0 l 1530 573 l 586 573 l 586 0 l 215 0 l 215 1374 l 586 1374 l 586 874 l 1530 874 l 1530 1374 l 1901 1374 l 1901 0"}},"familyName":"Syncopate","ascender":1556,"descender":-426,"underlinePosition":-100,"underlineThickness":50,"boundingBox":{"yMin":-426,"xMin":0,"yMax":1556,"xMax":2048},"resolution":2048,"original_font_information":{"font_family_name":"Syncopate","font_subfamily_name":"Bold"},"cssFontWeight":"bold","cssFontStyle":"normal"};
     { const font=new FontLoader().parse(SYNCOPATE_RYNH);
-      const g=new TextGeometry('RYNH',{font,size:0.85,depth:0.42,curveSegments:1,bevelEnabled:true,bevelThickness:0.035,bevelSize:0.03,bevelSegments:1});  // clean text, thin bevel (no displacement, no chunky bevel)
+      const g=new TextGeometry('RYNH',{font,size:0.85,depth:0.42,curveSegments:1,bevelEnabled:true,bevelThickness:0.035,bevelSize:0.03,bevelSegments:1});  // clean text, thin bevel
       g.center(); core.geometry.dispose(); core.geometry=g;
-      // bigger dents from a COARSER normal map only (no geometry displacement)
-      const cN=snowNormal.clone(); cN.needsUpdate=true; cN.wrapS=cN.wrapT=THREE.RepeatWrapping; cN.repeat.set(0.5,0.5);
-      core.material.normalMap=cN; core.material.normalScale.set(0.7,0.7); core.material.clearcoatNormalScale.set(0.35,0.35); core.material.needsUpdate=true; }
+      // the ONLY change vs the cube glass: a slightly coarser normal map (bigger, softer dents). No displacement, no deeper scale, no bevel change.
+      const cN=snowNormal.clone(); cN.needsUpdate=true; cN.wrapS=cN.wrapT=THREE.RepeatWrapping; cN.repeat.set(0.8,0.8);
+      core.material.normalMap=cN; core.material.needsUpdate=true; }
 
     const R=4.3, phi=Math.PI*(3-Math.sqrt(5));
     // crystalline ice cube: rounded box with subtle "grown ice" vertex displacement
