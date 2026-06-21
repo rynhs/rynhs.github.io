@@ -445,8 +445,18 @@
     // RYNH crystal in Syncopate: converted to a three.js typeface (subset R,Y,N,H) and inlined so it stays offline/single-file
     const SYNCOPATE_RYNH={"glyphs":{"R":{"ha":1892,"x_min":215,"x_max":1841,"o":"m 586 506 l 586 0 l 215 0 l 215 1374 l 1145 1374 q 1400 1343 1295 1374 q 1570 1255 1504 1312 q 1665 1118 1635 1198 q 1694 938 1694 1037 l 1694 938 q 1670 786 1694 851 q 1604 675 1645 721 q 1507 596 1562 628 q 1391 543 1452 564 l 1391 543 l 1841 0 l 1407 0 l 991 506 l 586 506 m 1319 940 l 1319 940 q 1309 1008 1319 980 q 1272 1054 1298 1036 q 1203 1079 1246 1071 q 1094 1087 1159 1087 l 1094 1087 l 586 1087 l 586 793 l 1094 793 q 1203 801 1159 793 q 1272 827 1246 809 q 1309 872 1298 844 q 1319 940 1319 900"},"Y":{"ha":1784,"x_min":41,"x_max":1743,"o":"m 1743 1374 l 1077 561 l 1077 0 l 707 0 l 707 561 l 41 1374 l 457 1374 l 893 821 l 1327 1374 l 1743 1374"},"N":{"ha":2130,"x_min":215,"x_max":1915,"o":"m 1915 0 l 1513 0 l 586 944 l 586 0 l 215 0 l 215 1374 l 618 1374 l 1546 426 l 1546 1374 l 1915 1374 l 1915 0"},"H":{"ha":2116,"x_min":215,"x_max":1901,"o":"m 1901 0 l 1530 0 l 1530 573 l 586 573 l 586 0 l 215 0 l 215 1374 l 586 1374 l 586 874 l 1530 874 l 1530 1374 l 1901 1374 l 1901 0"}},"familyName":"Syncopate","ascender":1556,"descender":-426,"underlinePosition":-100,"underlineThickness":50,"boundingBox":{"yMin":-426,"xMin":0,"yMax":1556,"xMax":2048},"resolution":2048,"original_font_information":{"font_family_name":"Syncopate","font_subfamily_name":"Bold"},"cssFontWeight":"bold","cssFontStyle":"normal"};
     { const font=new FontLoader().parse(SYNCOPATE_RYNH);
-      const g=new TextGeometry('RYNH',{font,size:0.85,depth:0.42,curveSegments:1,bevelEnabled:true,bevelThickness:0.035,bevelSize:0.03,bevelSegments:1});  // bevel BACK for glassy edge highlights, but optimized: cs1 + 1 bevel ring = 1356 verts (vs 3516 original, 61% lighter)
-      g.center(); core.geometry.dispose(); core.geometry=g; }   // RYNH uses the same ice-glass material as the cubes (makeIce) -> no tint/gradient
+      const g=new TextGeometry('RYNH',{font,size:0.85,depth:0.42,curveSegments:2,bevelEnabled:true,bevelThickness:0.05,bevelSize:0.05,bevelSegments:2});  // chunkier bevel + a little more geo so the dents read as facets
+      g.center();
+      // coarse vertex displacement -> BIG crystalline dents/facets (flatShading turns them into angular faces), instead of fine surface texture
+      { const p=g.attributes.position, nr=g.attributes.normal, v=new THREE.Vector3();
+        for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i);
+          const d=0.04*(Math.sin(v.x*2.6)*0.5+Math.cos(v.y*3.0)*0.5+Math.sin(v.z*2.3+v.y*1.4)*0.5);
+          p.setXYZ(i, v.x+nr.getX(i)*d, v.y+nr.getY(i)*d, v.z+nr.getZ(i)*d); }
+        g.computeVertexNormals(); }
+      core.geometry.dispose(); core.geometry=g;
+      // coarser + deeper normal map = bigger dents in the refraction, not fine frost
+      const cN=snowNormal.clone(); cN.needsUpdate=true; cN.wrapS=cN.wrapT=THREE.RepeatWrapping; cN.repeat.set(0.55,0.55);
+      core.material.normalMap=cN; core.material.normalScale.set(0.8,0.8); core.material.clearcoatNormalScale.set(0.4,0.4); core.material.needsUpdate=true; }
 
     const R=4.3, phi=Math.PI*(3-Math.sqrt(5));
     // crystalline ice cube: rounded box with subtle "grown ice" vertex displacement
