@@ -421,7 +421,7 @@
       const wallGeo=isCore?new THREE.IcosahedronGeometry(1.7,1):new THREE.BoxGeometry(1.8,1.8,1.8);
       const wallMat=new THREE.MeshStandardMaterial({
         color:acc.clone().multiplyScalar(0.85),
-        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.6,  // soft self-glow so no inner face ever reads pure black
+        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.42,  // soft self-glow, kept low so the chamber stays dark behind the glass card
         roughness:0.7, metalness:0, side:THREE.BackSide,
         normalMap:frost, transparent:true, opacity:0, depthWrite:false });
       wallMat.normalScale.set(0.55,0.55);
