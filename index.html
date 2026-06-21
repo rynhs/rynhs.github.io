@@ -348,7 +348,7 @@
           const next=()=>{ const f=pent[Math.floor(Math.random()*pent.length)],n=c.currentTime; o.frequency.cancelScheduledValues(n); o.frequency.setValueAtTime(crf,n); o.frequency.exponentialRampToValueAtTime(f,n+gT); crf=f; setTimeout(next,(interval+Math.random()*interval)*1000); };
           setTimeout(next,800+Math.random()*1500); };
         glide(0.08,5,3.5); glide(0.055,8,4.5);                                                          // two in-key gliding voices
-        out.gain.linearRampToValueAtTime(0.7,c.currentTime+3.5); }
+        out.gain.linearRampToValueAtTime(0.5,c.currentTime+3.5); }
       function noise(d){ const b=ctx.createBuffer(1,ctx.sampleRate*d,ctx.sampleRate),a=b.getChannelData(0); for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1; return b; }
       return {
         resume(){ init(); if(ctx&&ctx.state==='suspended')ctx.resume(); },
@@ -358,8 +358,8 @@
           g.gain.setValueAtTime(0,n); g.gain.linearRampToValueAtTime(0.22,n+0.01); g.gain.exponentialRampToValueAtTime(0.001,n+0.18);
           o.connect(g); g.connect(master); o.start(n); o.stop(n+0.2); },
         hover(){ if(!ctx||!on)return; const o=ctx.createOscillator(),g=ctx.createGain(),n=ctx.currentTime; o.type='sine'; o.frequency.value=1600;
-          g.gain.setValueAtTime(0,n); g.gain.linearRampToValueAtTime(0.05,n+0.005); g.gain.exponentialRampToValueAtTime(0.001,n+0.06);
-          o.connect(g); g.connect(master); o.start(n); o.stop(n+0.07); },
+          g.gain.setValueAtTime(0,n); g.gain.linearRampToValueAtTime(0.14,n+0.005); g.gain.exponentialRampToValueAtTime(0.001,n+0.12);
+          o.connect(g); g.connect(master); o.start(n); o.stop(n+0.13); },
         whoosh(dir){ if(!ctx||!on)return; const s=ctx.createBufferSource(); s.buffer=noise(1.5);
           const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=3.4;          // higher Q = resonant "swoooosh" character
           const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5200;
