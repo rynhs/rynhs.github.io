@@ -656,7 +656,8 @@
       if(reduce){ camState.x=toP.x;camState.y=toP.y;camState.z=toP.z;camState.tx=target.x;camState.ty=target.y;camState.tz=target.z; if(!isCore){applyDissolve(cube,1);setInterior(cube,1);} setSceneDim(1); finishIn(cube); dive=null; }
     }
     function finishIn(cube){ mode='DETAIL';
-      if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); chamberLight.intensity=CHL_REST; }   // lock the resting chamber: shell gone, walls full, lights dimmed
+      if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); chamberLight.intensity=CHL_REST;   // lock the resting chamber: shell gone, walls full, lights + crystal OFF (dark so the glass card reads)
+        if(cube.userData.shard) cube.userData.shard.material.emissiveIntensity=0; cube.userData.interior.glow.material.emissiveIntensity=0; }
       detailBase={x:camState.x,y:camState.y,z:camState.z,tx:camState.tx,ty:camState.ty,tz:camState.tz}; openPanel(cube.userData.project); }
     function exitDive(){
       if(mode!=='DETAIL')return; mode='EXITING'; closePanel(); detailBase=null; sfx.whoosh(1);
@@ -666,7 +667,8 @@
       if(reduce){ if(!dive.core){applyDissolve(lastCube,0);setInterior(lastCube,0);} setSceneDim(0); finishOut(); dive=null; }
     }
     function finishOut(){ mode='CLUSTER'; document.body.style.overflow=''; document.body.classList.remove('detail');
-      if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false; lastCube.userData.interior.glow.visible=false; } chamberLight.intensity=0; }
+      if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false; lastCube.userData.interior.glow.visible=false; lastCube.userData.interior.glow.material.emissiveIntensity=2.6;
+        if(lastCube.userData.shard) lastCube.userData.shard.material.emissiveIntensity=1.5; } chamberLight.intensity=0; }   // restore the crystal glow for cluster view
     function updateDive(){
       if(!dive)return;
       const k=dive.dur?clamp((performance.now()-dive.t0)/dive.dur,0,1):1, e=dive.phase==='in'?easeOutCubic(k):easeInOutCubic(k);
@@ -675,10 +677,15 @@
       if(!dive.core){ const cc=new THREE.Vector3(); dive.cube.getWorldPosition(cc);
         const dist=Math.hypot(camState.x-cc.x,camState.y-cc.y,camState.z-cc.z);
         const w=clamp(1-(dist-0.9)/(1.4-0.9),0,1);
-        setInterior(dive.cube, w);                                      // walls/glow fade in by proximity
+        setInterior(dive.cube, w);                                      // walls fade in by proximity
         applyDissolve(dive.cube, clamp((1.5-dist)/0.6,0,1));            // shell gone before the standoff
-        const dimP=dive.phase==='in'?easeInOutCubic(clamp((k-0.4)/0.6,0,1)):1;  // lights come up on the reveal, then DIM down over the back half of the dive-in
-        chamberLight.intensity=w*lerp(CHL_PEAK,CHL_REST,dimP); }
+        const inP=easeInOutCubic(clamp((k-0.4)/0.6,0,1));
+        const lightDimP=dive.phase==='in'?inP:1;                        // point light eases off going in, stays off
+        const crystalDimP=dive.phase==='in'?inP:1-e;                    // crystal (shard+glow) glows on the approach then fades OFF inside -> dark chamber so the glass card reads; back ON as we leave
+        chamberLight.intensity=w*lerp(CHL_PEAK,CHL_REST,lightDimP);
+        const u=dive.cube.userData;
+        if(u.shard) u.shard.material.emissiveIntensity=lerp(1.5,0,crystalDimP);
+        u.interior.glow.material.emissiveIntensity=lerp(2.6,0,crystalDimP); }
       setSceneDim(dive.phase==='in'?clamp((e-0.1)/0.7,0,1):clamp(1-e,0,1));
       if(bloom)bloom.strength=dive.phase==='in'?lerp(0.55,0.38,e):lerp(0.38,0.55,e);
       if(k>=1){ if(dive.phase==='in'){ const c=dive.cube; dive=null; finishIn(c); } else { dive=null; finishOut(); } }
