@@ -420,9 +420,9 @@
       const acc=new THREE.Color(accent);
       const wallGeo=isCore?new THREE.IcosahedronGeometry(1.7,1):new THREE.BoxGeometry(1.8,1.8,1.8);
       const wallMat=new THREE.MeshStandardMaterial({
-        color:acc.clone().multiplyScalar(0.85),
-        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.12,  // very low self-glow: chamber stays dark behind the glass card so the white text reads
-        roughness:0.7, metalness:0, side:THREE.BackSide,
+        color:acc.clone().multiplyScalar(0.3),
+        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.07,  // tiny self-glow
+        roughness:0.9, metalness:0, side:THREE.BackSide, envMapIntensity:0.08,             // kill the HDRI lift so the chamber is genuinely dark behind the glass card (white text reads)
         normalMap:frost, transparent:true, opacity:0, depthWrite:false });
       wallMat.normalScale.set(0.55,0.55);
       const walls=new THREE.Mesh(wallGeo,wallMat); walls.visible=false; parent.add(walls);
