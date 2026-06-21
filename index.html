@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Ryan Hosseini · Full-stack developer & tech consultant</title>
+<meta name="description" content="Your business, revolutionized. Full-stack development, automation, data, and digital strategy from a developer with a business degree behind it." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --bg:#05070c;
+    --ink:#eef4fa;
+    --muted:#8a96a6;
+    --line:rgba(180,215,255,.14);
+    --accent:#8fdcff;
+    --maxw:1100px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{overflow-x:hidden}
+  a{color:inherit}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  #stage{position:fixed;inset:0;z-index:0}
+  #stage canvas{display:block;width:100%;height:100%}
+  #scroll-rig{position:relative;height:700vh;z-index:1;pointer-events:none}
+
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:18px 26px;pointer-events:none}
+  .navwrap{position:relative;pointer-events:auto}
+  .topbar .mark{font-family:"Space Grotesk";font-weight:700;letter-spacing:.14em;font-size:17px;background:none;border:none;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:4px 2px}
+  .topbar .mark b{color:var(--accent)}
+  .chev{font-size:14px;line-height:1;opacity:.65;transform:translateY(-1px);transition:transform .3s,opacity .2s}
+  .navwrap:hover .chev{opacity:1;transform:translateY(1px) rotate(180deg)}
+  .navmenu{list-style:none;margin:6px 0 0;padding:8px;position:absolute;top:100%;left:0;min-width:236px;
+    opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .25s,transform .25s,visibility .25s;
+    border:1px solid rgba(190,225,255,.28);border-radius:16px;
+    background:linear-gradient(160deg,rgba(34,50,72,.46),rgba(11,18,30,.55));
+    backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);
+    box-shadow:0 26px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(230,245,255,.3)}
+  .navwrap:hover .navmenu{opacity:1;visibility:visible;transform:translateY(0)}
+  .navmenu button{width:100%;text-align:left;background:none;border:none;color:#d6e3f1;font:500 13px/1 "Inter",sans-serif;
+    padding:11px 13px;border-radius:10px;cursor:pointer;letter-spacing:.02em;transition:background .15s,color .15s;display:flex;gap:10px;align-items:center}
+  .navmenu button:hover{background:rgba(143,220,255,.13);color:#fff}
+  .navmenu .dot{width:7px;height:7px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
+  .topbar a{pointer-events:auto;text-decoration:none;color:#eaf6ff;font-size:13px;letter-spacing:.04em;padding:9px 16px;border-radius:999px;
+    border:1px solid rgba(190,225,255,.35);background:linear-gradient(150deg,rgba(150,200,255,.18),rgba(120,170,230,.06));
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 rgba(230,245,255,.35);transition:transform .15s,border-color .2s}
+  .topbar a:hover{transform:translateY(-1px);border-color:rgba(190,225,255,.65)}
+
+  .beat{position:fixed;left:0;right:0;z-index:6;pointer-events:none;opacity:0;transition:opacity .5s ease;will-change:opacity}
+  .beat .inner{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  #beat-hero{top:50%;transform:translateY(-54%)}
+  #beat-hero .kicker{font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+  #beat-hero h1{font-family:"Space Grotesk";font-weight:700;font-size:clamp(40px,7.6vw,86px);line-height:1.02;margin:0;letter-spacing:-.02em;max-width:15ch;
+    background:linear-gradient(180deg, rgba(255,255,255,.97) 0%, rgba(186,216,255,.55) 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+    filter:drop-shadow(0 2px 34px rgba(120,180,255,.28)) drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+  #beat-hero h1 em{font-style:normal;-webkit-text-fill-color:var(--accent);color:var(--accent)}
+  #beat-hero p{margin-top:24px;color:var(--muted);font-size:clamp(15px,2vw,19px);max-width:46ch}
+  .beat.mid{top:50%;transform:translateY(-50%);text-align:center}
+  .beat.mid h2{font-family:"Space Grotesk";font-weight:600;font-size:clamp(26px,4.5vw,46px);margin:0;letter-spacing:-.01em;
+    background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(190,222,255,.6));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+    filter:drop-shadow(0 2px 26px rgba(120,180,255,.28)) drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+  .beat.mid p{color:var(--muted);margin-top:12px;font-size:16px}
+  #beat-contact{top:50%;transform:translateY(-50%);text-align:center}
+  #beat-contact h2{font-family:"Space Grotesk";font-weight:700;font-size:clamp(30px,6vw,60px);margin:0 0 22px;
+    background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(190,222,255,.6));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+    filter:drop-shadow(0 2px 30px rgba(120,180,255,.3)) drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+  /* glass pill */
+  .gpill,#beat-contact .cta{pointer-events:auto;display:inline-flex;gap:8px;align-items:center;padding:13px 24px;border-radius:999px;font-weight:600;font-size:14px;text-decoration:none;cursor:pointer;
+    color:#eaf6ff;border:1px solid rgba(190,225,255,.4);
+    background:linear-gradient(150deg,rgba(150,200,255,.22),rgba(120,170,230,.08));
+    backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
+    box-shadow:inset 0 1px 0 rgba(230,245,255,.45),0 8px 30px rgba(0,0,0,.3);
+    text-shadow:0 1px 8px rgba(0,0,0,.4);transition:transform .15s,border-color .2s,background .2s}
+  .gpill:hover,#beat-contact .cta:hover{transform:translateY(-2px);border-color:rgba(190,225,255,.7);background:linear-gradient(150deg,rgba(170,215,255,.32),rgba(130,180,240,.14))}
+
+  #hover-label{position:fixed;z-index:8;pointer-events:none;transform:translate(-50%,-160%);opacity:0;transition:opacity .18s;font-family:"Space Grotesk";font-weight:600;font-size:14px;letter-spacing:.02em;background:rgba(8,14,22,.7);border:1px solid var(--line);padding:6px 12px;border-radius:999px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);white-space:nowrap}
+  #hover-label.show{opacity:1}
+
+  #hint{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:7;color:var(--muted);font-size:12px;letter-spacing:.2em;text-transform:uppercase;transition:opacity .4s;pointer-events:none}
+  #sound{position:fixed;left:24px;bottom:22px;z-index:8;pointer-events:auto;background:none;border:none;color:var(--muted);font:500 12px/1 "Inter",sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:color .2s}
+  #sound:hover{color:var(--ink)}
+
+  /* "inside the cube" reveal: a frosted pane floating in the chamber, not a page */
+  #detail{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;perspective:1100px}
+  #detail.is-open{opacity:1;visibility:visible}
+  #detail .scrim{position:absolute;inset:0;background:radial-gradient(135% 110% at 50% 50%, transparent 60%, rgba(4,7,12,.32) 100%)}
+  #detail .card{position:relative;width:min(540px,100%);border-radius:26px;padding:40px 38px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.55);
+    background:linear-gradient(150deg, rgba(236,246,255,.12), rgba(175,210,250,.04));
+    backdrop-filter:url(#liquidglass) blur(7px) saturate(185%) brightness(1.22);
+    -webkit-backdrop-filter:blur(24px) saturate(185%) brightness(1.18);
+    box-shadow:0 40px 100px rgba(0,0,0,.42), inset 1.5px 1.5px 0 rgba(255,255,255,.6), inset -1px -1px 2px rgba(170,205,255,.3), inset 0 0 90px rgba(150,200,255,.1);
+    transform-style:preserve-3d;will-change:transform}
+  #detail .card::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;
+    background:radial-gradient(130% 90% at 25% -10%, rgba(210,235,255,.18), transparent 55%)}
+  #detail .card::after{content:"";position:absolute;left:0;right:0;top:0;height:46%;z-index:2;pointer-events:none;border-radius:26px 26px 60% 60%;
+    background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));mix-blend-mode:screen}
+  #detail .card>*{position:relative;z-index:1;opacity:0;transform:translateY(20px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  #detail.is-open .card>*{opacity:1;transform:none}
+  #detail.is-open .card>*:nth-child(2){transition-delay:.08s}
+  #detail.is-open .card>*:nth-child(3){transition-delay:.16s}
+  #detail.is-open .card>*:nth-child(4){transition-delay:.24s}
+  #detail.is-open .card>*:nth-child(5){transition-delay:.32s}
+  #detail.is-open .card>*:nth-child(6){transition-delay:.40s}
+  #detail .eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:14px}
+  #detail h3{font-family:"Space Grotesk";font-weight:600;font-size:30px;margin:0 0 14px;line-height:1.1;text-shadow:0 2px 20px rgba(0,0,0,.65),0 1px 3px rgba(0,0,0,.6)}
+  #detail .blurb{color:#e2ebf5;font-size:16px;line-height:1.65;margin:0 0 22px;text-shadow:0 1px 16px rgba(0,0,0,.7),0 1px 2px rgba(0,0,0,.6)}
+  #detail .tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+  #detail .tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+  #detail .actions{display:flex;gap:12px;flex-wrap:wrap}
+  #detail .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:999px;font-weight:600;font-size:14px;text-decoration:none;cursor:pointer;transition:transform .15s,background .2s,border-color .2s}
+  #detail .btn-go{color:#eaf6ff;border:1px solid rgba(190,225,255,.5);
+    background:linear-gradient(150deg,rgba(143,220,255,.3),rgba(120,180,240,.12));
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 rgba(230,245,255,.5);text-shadow:0 1px 8px rgba(0,0,0,.4)}
+  #detail .btn-go:hover{transform:translateY(-2px);border-color:rgba(190,225,255,.85)}
+  #detail .btn-ghost{border:1px solid rgba(190,225,255,.22);color:var(--ink);
+    background:linear-gradient(150deg,rgba(150,200,255,.12),rgba(120,170,230,.04));
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #detail .btn-ghost:hover{border-color:rgba(190,225,255,.5)}
+  #detail .close{position:absolute;top:16px;right:18px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:18px;cursor:pointer;line-height:1;transition:background .2s}
+  #detail .close:hover{background:rgba(255,255,255,.08)}
+  @media (prefers-reduced-transparency: reduce){ #detail .card{background:#0f1620} #hover-label{background:#0a0e14} }
+
+  @property --frost-pos{ syntax:'<percentage>'; inherits:false; initial-value:-60%; }
+  #loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;
+    background:radial-gradient(120% 120% at 50% 40%, #0b1018 0%, #06090f 70%, #04060a 100%);
+    transition:opacity .9s ease, visibility .9s ease}
+  #loader.hide{opacity:0;visibility:hidden;pointer-events:none}
+  .rynh-stage{position:relative;width:min(58vw,500px);aspect-ratio:3/1}
+  .rynh-stage>*{position:absolute;inset:0;display:grid;place-items:center}
+  .rynh-fill,.rynh-shimmer{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:clamp(54px,11vw,128px);letter-spacing:.06em}
+  .rynh-svg{width:100%;height:100%;overflow:visible}
+  .rynh-stroke{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:128px;letter-spacing:8px;
+    fill:none;stroke:#dff3ff;stroke-width:1.6;filter:drop-shadow(0 0 6px rgba(168,216,255,.45));
+    stroke-dasharray:1500;stroke-dashoffset:1500;animation:rynh-draw 1.5s ease forwards}
+  @keyframes rynh-draw{to{stroke-dashoffset:0}}
+  .rynh-fill-wrap{clip-path:inset(100% 0 0 0);animation:rynh-rise 1.4s .55s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes rynh-rise{to{clip-path:inset(0 0 0 0)}}
+  .rynh-fill{background:linear-gradient(180deg,#e8f6ff 0%,#a8d8ff 45%,#5e9bd6 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+    filter:drop-shadow(0 0 14px rgba(120,180,235,.35))}
+  .rynh-shimmer{background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.85) 50%,transparent 65%);
+    background-size:250% 100%;background-position:var(--frost-pos) center;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+    opacity:0;animation:rynh-glint 2.6s 1.8s ease-in-out infinite}
+  @keyframes rynh-glint{0%{opacity:0;--frost-pos:-60%}15%{opacity:1}60%{--frost-pos:160%;opacity:1}75%,100%{opacity:0;--frost-pos:160%}}
+  @media (prefers-reduced-motion:reduce){
+    .rynh-stroke,.rynh-fill-wrap,.rynh-shimmer{animation:none}
+    .rynh-fill-wrap{clip-path:inset(0 0 0 0)} .rynh-stroke{stroke-dashoffset:0} }
+
+  #fallback{display:none;position:relative;z-index:30;max-width:var(--maxw);margin:0 auto;padding:120px 24px 80px}
+  #fallback.show{display:block}
+  #fallback h1{font-family:"Space Grotesk";font-size:clamp(34px,7vw,64px);margin:0 0 16px;letter-spacing:-.02em}
+  #fallback h1 em{font-style:normal;color:var(--accent)}
+  #fallback .lead{color:var(--muted);max-width:54ch;font-size:18px;margin-bottom:48px}
+  #fallback .grid{display:grid;gap:18px;grid-template-columns:repeat(2,1fr)}
+  #fallback .c{border:1px solid rgba(190,225,255,.18);border-radius:18px;padding:26px;text-decoration:none;color:inherit;
+    background:linear-gradient(155deg, rgba(48,70,98,.28), rgba(14,20,32,.42));
+    backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);
+    box-shadow:inset 0 1px 0 rgba(220,240,255,.18);transition:transform .15s,border-color .2s}
+  #fallback .c:hover{transform:translateY(-3px);border-color:rgba(143,220,255,.4)}
+  #fallback .c h3{font-family:"Space Grotesk";margin:0 0 8px}
+  #fallback .c p{color:var(--muted);font-size:15px;margin:0 0 14px}
+  #fallback .c .tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 10px;margin-right:6px}
+  @media (max-width:760px){ #fallback .grid{grid-template-columns:1fr} }
+
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+</style>
+</head>
+<body>
+  <div id="loader">
+    <div class="rynh-stage">
+      <svg class="rynh-svg" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet"><text x="300" y="142" text-anchor="middle" class="rynh-stroke">RYNH</text></svg>
+      <div class="rynh-fill-wrap"><span class="rynh-fill">RYNH</span></div>
+      <span class="rynh-shimmer">RYNH</span>
+    </div>
+  </div>
+
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="liquidglass" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.009 0.013" numOctaves="2" seed="11" result="n"/>
+    <feGaussianBlur in="n" stdDeviation="1.6" result="nb"/>
+    <feDisplacementMap in="SourceGraphic" in2="nb" scale="30" xChannelSelector="R" yChannelSelector="G"/>
+  </filter></svg>
+
+  <div class="topbar">
+    <div class="navwrap">
+      <button class="mark" id="navmark" aria-haspopup="true">RY<b>NH</b><span class="chev">⌄</span></button>
+      <ul class="navmenu" id="navmenu"></ul>
+    </div>
+    <a href="mailto:ryanhosseini12@gmail.com?subject=Let's%20talk">Let's talk →</a>
+  </div>
+
+  <div id="stage" aria-hidden="true"></div>
+  <div id="scroll-rig"></div>
+
+  <div class="beat" id="beat-hero"><div class="inner">
+    <div class="kicker">Ryan Hosseini · Developer · Business &amp; Tech Consultant</div>
+    <h1>Your business, <em>revolutionized</em>.</h1>
+    <p>I build the software, automation, and digital presence that make your operations faster, leaner, and modern. Full-stack engineering with a business degree behind it. Scroll to explore. Click a cube to look inside.</p>
+  </div></div>
+  <div class="beat mid" id="beat-1"><div class="inner"><h2>Six ways I move a business forward.</h2><p>Each cube is something I can build for you.</p></div></div>
+  <div class="beat mid" id="beat-2"><div class="inner"><h2>An engineer who reads the business.</h2><p>BBA in Management Information Systems. Code that serves strategy, not the other way around.</p></div></div>
+  <div class="beat mid" id="beat-3"><div class="inner"><h2>Click a cube to look inside.</h2><p>Hover to light one up.</p></div></div>
+  <div class="beat" id="beat-contact"><div class="inner">
+    <h2>Ready to revolutionize?</h2>
+    <a class="cta" href="mailto:ryanhosseini12@gmail.com?subject=Project%20inquiry">Let's talk →</a>
+  </div></div>
+
+  <div id="hint">Scroll ↓</div>
+  <button id="sound" aria-pressed="true">♪ Sound: <span id="sound-state">On</span></button>
+  <div id="hover-label"></div>
+
+  <div id="detail" role="dialog" aria-modal="true" aria-labelledby="d-title">
+    <div class="scrim" data-close></div>
+    <div class="card">
+      <button class="close" data-close aria-label="Close">×</button>
+      <div class="eyebrow" id="d-eyebrow"></div>
+      <h3 id="d-title"></h3>
+      <p class="blurb" id="d-blurb"></p>
+      <div class="actions" id="d-actions"></div>
+    </div>
+  </div>
+
+  <main id="fallback">
+    <h1>Your business, <em>revolutionized</em>.</h1>
+    <p class="lead">I'm Ryan Hosseini, a full-stack developer and tech consultant with a BBA in Management Information Systems from SFU's Beedie School of Business. Here is how I can help.</p>
+    <div class="grid" id="fallback-grid"></div>
+  </main>
+  <nav class="sr-only" aria-label="Services and contact">
+    <ul>
+      <li>Custom software and web app development</li>
+      <li>Business automation and internal tools</li>
+      <li>Data analytics and dashboards</li>
+      <li>Web presence and branding</li>
+      <li>AI integration</li>
+      <li>Operations and technical strategy consulting</li>
+      <li><a href="mailto:ryanhosseini12@gmail.com">Contact Ryan Hosseini</a></li>
+    </ul>
+  </nav>
+
+  <noscript><style>#loader,#stage,#scroll-rig,.beat,#hint{display:none!important}#fallback{display:block!important}</style></noscript>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+  // ---------- services + about (projects are private; these are capabilities) ----------
+  const SERVICES = [
+    { title:'Custom Software & Apps', kind:'Build', accent:'#8fb6ff',
+      blurb:'Web apps, dashboards, internal tools, and installable PWAs, built full-stack from first sketch to production. Auth, payments, realtime, offline: whatever the job actually needs.',
+      tags:['Full-stack','Web apps','PWAs'] },
+    { title:'Business Automation', kind:'Automate', accent:'#5fe0c8',
+      blurb:'Manual, repetitive work turned into systems. I automate the workflows and build the internal tools that quietly save your team hours every week, the way I built a logistics tracker that cut errors at a health authority.',
+      tags:['Workflows','Internal tools','Scripting'] },
+    { title:'Data & Analytics', kind:'Measure', accent:'#7be08a',
+      blurb:'Spreadsheets turned into decisions. Dashboards, reporting, and clean data pipelines so you can see what is actually happening. Google-certified in data analytics, fluent in SQL and Excel.',
+      tags:['SQL','Dashboards','Reporting'] },
+    { title:'Web Presence & Branding', kind:'Attract', accent:'#ffce7a',
+      blurb:'Marketing sites and brand identity that load fast, rank, and convert. A designer’s eye with a developer’s hands, so it looks right and performs right.',
+      tags:['Websites','Branding','SEO'] },
+    { title:'AI Integration', kind:'Modernize', accent:'#c79bff',
+      blurb:'Bring AI into your products and workflows: assistants, smart automation, document tooling, and features that actually ship, not demos that impress and then break.',
+      tags:['AI','Automation','LLMs'] },
+    { title:'Strategy & Operations', kind:'Advise', accent:'#ff8fb0',
+      blurb:'I read the business, not just the code. Process improvement, requirements, and the technical strategy to get there, backed by real project-management experience and a business degree.',
+      tags:['Consulting','Process','Strategy'] },
+  ];
+  const CORE = { title:"Ryan Hosseini", kind:'About', accent:'#8fdcff', isCore:true,
+    blurb:"Full-stack developer and business systems consultant. BBA in Management Information Systems from SFU’s Beedie School of Business (Dean’s Honour Roll), Google-certified in data analytics. As a project manager I built a digital logistics system that improved accuracy 20% across 1,000+ monthly shipments at a provincial health authority. I bridge the gap between what a business needs and what actually gets built.",
+    tags:['BBA · MIS','Full-stack','Data analytics'] };
+
+  // fallback grid + WebGL gate
+  const fbGrid=document.getElementById('fallback-grid');
+  SERVICES.forEach(s=>{ const d=document.createElement('div'); d.className='c';
+    d.innerHTML=`<h3>${s.title}</h3><p>${s.blurb}</p>`; fbGrid.appendChild(d); });
+  let loaderGone=false;
+  function hideLoader(){ if(loaderGone)return; loaderGone=true;
+    const wait=Math.max(0, 2300-performance.now());   // let one clean RYNH cycle play even on fast loads
+    setTimeout(()=>document.getElementById('loader').classList.add('hide'), wait); }
+  function showFallback(){ hideLoader();
+    document.getElementById('stage').style.display='none'; document.getElementById('scroll-rig').style.display='none';
+    document.querySelectorAll('.beat,#hint').forEach(el=>el.style.display='none');
+    document.getElementById('fallback').classList.add('show'); }
+
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile=matchMedia('(pointer:coarse)').matches;
+  const probe=document.createElement('canvas');
+  const hasWebGL=!!(probe.getContext('webgl2')||probe.getContext('webgl'));
+  if(!hasWebGL){ showFallback(); }
+  else { boot().catch(err=>{ console.error('3D init failed:',err); showFallback(); }); }
+
+  async function boot(){
+    const THREE=await import('three');
+    const { RGBELoader }=await import('three/addons/loaders/RGBELoader.js');
+    const { FontLoader }=await import('three/addons/loaders/FontLoader.js');
+    const { TextGeometry }=await import('three/addons/geometries/TextGeometry.js');
+    const { ImprovedNoise }=await import('three/addons/math/ImprovedNoise.js');
+    const { RoundedBoxGeometry }=await import('three/addons/geometries/RoundedBoxGeometry.js');
+    const { EffectComposer }=await import('three/addons/postprocessing/EffectComposer.js');
+    const { RenderPass }=await import('three/addons/postprocessing/RenderPass.js');
+    const { UnrealBloomPass }=await import('three/addons/postprocessing/UnrealBloomPass.js');
+    const { BokehPass }=await import('three/addons/postprocessing/BokehPass.js');
+    const { ShaderPass }=await import('three/addons/postprocessing/ShaderPass.js');
+    const { OutputPass }=await import('three/addons/postprocessing/OutputPass.js');
+
+    const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+    const easeInOutCubic=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+    const easeOutCubic=k=>1-Math.pow(1-k,3);  // momentum: carries in, decelerates clean, no overshoot
+
+    const stage=document.getElementById('stage');
+    const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.5:2));
+    renderer.setSize(innerWidth,innerHeight);
+    renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=0.98;
+    renderer.outputColorSpace=THREE.SRGBColorSpace;
+    stage.appendChild(renderer.domElement);
+
+    // synthesized sound (Web Audio, no asset files): cold drone + dive whoosh + hover tick + click blip
+    const sfx=(()=>{
+      let ctx=null,on=true,master=null;
+      function init(){ if(ctx)return; const AC=window.AudioContext||window.webkitAudioContext; if(!AC)return;
+        ctx=new AC(); master=ctx.createGain(); master.gain.value=on?0.16:0; master.connect(ctx.destination);
+        const g=ctx.createGain(); g.gain.value=0; g.connect(master);
+        const o1=ctx.createOscillator(); o1.type='sine'; o1.frequency.value=55;
+        const o2=ctx.createOscillator(); o2.type='sine'; o2.frequency.value=82.5;
+        const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=380;
+        o1.connect(lp); o2.connect(lp); lp.connect(g); o1.start(); o2.start();
+        g.gain.linearRampToValueAtTime(0.5,ctx.currentTime+3); }
+      function noise(d){ const b=ctx.createBuffer(1,ctx.sampleRate*d,ctx.sampleRate),a=b.getChannelData(0); for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1; return b; }
+      return {
+        resume(){ init(); if(ctx&&ctx.state==='suspended')ctx.resume(); },
+        toggle(){ on=!on; if(master)master.gain.value=on?0.16:0; return on; },
+        blip(){ if(!ctx||!on)return; const o=ctx.createOscillator(),g=ctx.createGain(),n=ctx.currentTime; o.type='triangle';
+          o.frequency.setValueAtTime(880,n); o.frequency.exponentialRampToValueAtTime(420,n+0.12);
+          g.gain.setValueAtTime(0,n); g.gain.linearRampToValueAtTime(0.22,n+0.01); g.gain.exponentialRampToValueAtTime(0.001,n+0.18);
+          o.connect(g); g.connect(master); o.start(n); o.stop(n+0.2); },
+        hover(){ if(!ctx||!on)return; const o=ctx.createOscillator(),g=ctx.createGain(),n=ctx.currentTime; o.type='sine'; o.frequency.value=1600;
+          g.gain.setValueAtTime(0,n); g.gain.linearRampToValueAtTime(0.05,n+0.005); g.gain.exponentialRampToValueAtTime(0.001,n+0.06);
+          o.connect(g); g.connect(master); o.start(n); o.stop(n+0.07); },
+        whoosh(dir){ if(!ctx||!on)return; const s=ctx.createBufferSource(); s.buffer=noise(1);
+          const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=1.1; const g=ctx.createGain(); g.gain.value=0;
+          s.connect(bp); bp.connect(g); g.connect(master); const n=ctx.currentTime;
+          bp.frequency.setValueAtTime(dir<0?2200:300,n); bp.frequency.exponentialRampToValueAtTime(dir<0?300:2200,n+0.7);
+          g.gain.linearRampToValueAtTime(0.4,n+0.12); g.gain.linearRampToValueAtTime(0,n+0.85);
+          s.start(n); s.stop(n+0.9); },
+        get on(){ return on; }
+      };
+    })();
+
+    const scene=new THREE.Scene();
+    const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.1,100);
+
+    // dark radial-gradient void (premium depth, not flat black)
+    { const cv=document.createElement('canvas'); cv.width=cv.height=512; const g=cv.getContext('2d');
+      const rg=g.createRadialGradient(256,210,40,256,256,360);
+      rg.addColorStop(0,'#0e131d'); rg.addColorStop(0.6,'#080b12'); rg.addColorStop(1,'#04050a');
+      g.fillStyle=rg; g.fillRect(0,0,512,512);
+      const bg=new THREE.CanvasTexture(cv); bg.colorSpace=THREE.SRGBColorSpace; scene.background=bg; }
+
+    // HDRI environment = the biggest visual win for glass. Loads async; graceful fallback.
+    const pmrem=new THREE.PMREMGenerator(renderer); pmrem.compileEquirectangularShader();
+    new RGBELoader().load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/autoshop_01_1k.hdr',
+      hdr=>{ hdr.mapping=THREE.EquirectangularReflectionMapping; scene.environment=pmrem.fromEquirectangular(hdr).texture; hdr.dispose(); pmrem.dispose(); hideLoader(); },
+      undefined,
+      ()=>{ scene.environment=null; hideLoader(); });
+
+    // procedural frost normal map -> "actually frozen" crystalline surface
+    function frostNormal(size=512){
+      const n=new ImprovedNoise(), data=new Float32Array(size*size); let di=0;
+      for(let y=0;y<size;y++)for(let x=0;x<size;x++){ let v=0,f=0.018,a=1;
+        for(let o=0;o<5;o++){ v+=a*n.noise(x*f,y*f,12.7); f*=2.1; a*=0.55; } data[di++]=v; }
+      const px=new Uint8Array(size*size*4), idx=(x,y)=>data[((y+size)%size)*size+((x+size)%size)];
+      for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+        const s=2.2,dx=(idx(x-1,y)-idx(x+1,y))*s,dy=(idx(x,y-1)-idx(x,y+1))*s,l=Math.hypot(dx,dy,1),o=(y*size+x)*4;
+        px[o]=(dx/l*0.5+0.5)*255; px[o+1]=(dy/l*0.5+0.5)*255; px[o+2]=(1/l*0.5+0.5)*255; px[o+3]=255; }
+      const t=new THREE.DataTexture(px,size,size,THREE.RGBAFormat); t.needsUpdate=true;
+      t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2.2,2.2); return t;
+    }
+    const frost=frostNormal();
+
+    // real CC0 snow surface normal map (Poly Haven, local) for genuine ice detail; frost is the fallback
+    const texLoader=new THREE.TextureLoader();
+    const snowNormal=texLoader.load('textures/snow_nor_gl_1k.jpg', undefined, undefined, ()=>{});
+    snowNormal.wrapS=snowNormal.wrapT=THREE.RepeatWrapping; snowNormal.repeat.set(1.6,1.6);
+
+    const cluster=new THREE.Group(); scene.add(cluster);
+
+    // premium ice: clear glass (low roughness) with frost via NORMAL map, not roughness.
+    // glassy + frozen at once; clearcoat glints; depth tint; faint iridescent edges.
+    function makeIce(accent,full){
+      const m=new THREE.MeshPhysicalMaterial({
+        color:0xffffff, metalness:0, roughness:0.08,
+        transmission:1.0, thickness: full?1.8:1.4, ior:1.31,
+        dispersion:0.5,
+        attenuationColor:new THREE.Color(accent), attenuationDistance:2.4,
+        clearcoat:1, clearcoatRoughness:0.12,
+        iridescence:0.18, iridescenceIOR:1.3, iridescenceThicknessRange:[120,420],
+        sheen:0.25, sheenRoughness:0.6, sheenColor:new THREE.Color(0xbfe0ff),
+        normalMap:snowNormal, clearcoatNormalMap:frost,
+        envMapIntensity:1.35, transparent:true,
+        emissive:new THREE.Color(accent), emissiveIntensity:0,
+      });
+      m.normalScale.set(0.35,0.35); m.clearcoatNormalScale=new THREE.Vector2(0.12,0.12);
+      return m;
+    }
+    // interior of a cube: frosted ice WALLS you're enclosed by (back faces) + a glowing core orb.
+    // hidden in cluster view, revealed on dive so the inside reads as a frozen chamber, not empty glass.
+    function addInterior(parent,accent,isCore){
+      const acc=new THREE.Color(accent);
+      const wallGeo=isCore?new THREE.IcosahedronGeometry(1.7,1):new THREE.BoxGeometry(1.8,1.8,1.8);
+      const wallMat=new THREE.MeshStandardMaterial({
+        color:acc.clone().multiplyScalar(0.85),
+        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.6,  // soft self-glow so no inner face ever reads pure black
+        roughness:0.7, metalness:0, side:THREE.BackSide,
+        normalMap:frost, transparent:true, opacity:0, depthWrite:false });
+      wallMat.normalScale.set(0.55,0.55);
+      const walls=new THREE.Mesh(wallGeo,wallMat); walls.visible=false; parent.add(walls);
+      const glow=new THREE.Mesh(new THREE.IcosahedronGeometry(isCore?0.5:0.42,1),
+        new THREE.MeshStandardMaterial({color:acc,emissive:acc,emissiveIntensity:2.6,roughness:0.4,metalness:0,transparent:true,opacity:0}));
+      glow.visible=false; parent.add(glow);
+      return {walls,glow};
+    }
+
+    const clickable=[];
+    // central gem: faceted ice crystal, upgraded to a real sculpted boulder mesh once the model loads
+    const coreGeo=new THREE.IcosahedronGeometry(1.15,1);
+    { const p=coreGeo.attributes.position,v=new THREE.Vector3();
+      for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i); const f=1+0.12*Math.sin(v.x*4)+0.09*Math.cos(v.y*5)+0.07*Math.sin(v.z*6); v.multiplyScalar(f); p.setXYZ(i,v.x,v.y,v.z); }
+      coreGeo.computeVertexNormals(); }
+    const core=new THREE.Mesh(coreGeo,makeIce(CORE.accent,true));
+    core.material.flatShading=true; core.material.needsUpdate=true;
+    core.userData={project:CORE,isCore:true,baseTransmission:1.0,baseThickness:1.8,interior:addInterior(core,CORE.accent,true)};
+    cluster.add(core); clickable.push(core);
+    // central gem = crystalline ICE "RYNH" wordmark (faceted glass text)
+    new FontLoader().load('https://cdn.jsdelivr.net/npm/three@0.169.0/examples/fonts/helvetiker_bold.typeface.json', font=>{
+      const g=new TextGeometry('RYNH',{font,size:0.86,depth:0.42,curveSegments:5,bevelEnabled:true,bevelThickness:0.07,bevelSize:0.05,bevelSegments:3});
+      g.center(); core.geometry.dispose(); core.geometry=g;
+    }, undefined, ()=>{});
+
+    const R=4.3, phi=Math.PI*(3-Math.sqrt(5));
+    // crystalline ice cube: rounded box with subtle "grown ice" vertex displacement
+    const cubeGeo=new RoundedBoxGeometry(1.15,1.15,1.15,10,0.08);
+    { const p=cubeGeo.attributes.position,nr=cubeGeo.attributes.normal,v=new THREE.Vector3();
+      for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i);
+        const d=0.045*(Math.sin(v.x*7)*0.5+Math.cos(v.y*8)*0.5+Math.sin(v.z*6)*0.5);
+        v.x+=nr.getX(i)*d; v.y+=nr.getY(i)*d; v.z+=nr.getZ(i)*d; p.setXYZ(i,v.x,v.y,v.z); }
+      cubeGeo.computeVertexNormals(); }
+    SERVICES.forEach((p,i)=>{
+      const y=1-(i/(SERVICES.length-1))*2, rr=Math.sqrt(Math.max(0,1-y*y)), th=phi*i;
+      const pos=new THREE.Vector3(Math.cos(th)*rr,y*0.85,Math.sin(th)*rr).multiplyScalar(R);
+      const cube=new THREE.Mesh(cubeGeo,makeIce(p.accent,false));
+      cube.position.copy(pos);
+      cube.rotation.set(Math.random()*0.6,Math.random()*0.6,Math.random()*0.4);
+      cube.userData={project:p,isCore:false,baseTransmission:1.0,baseThickness:1.4,homeY:pos.y,idx:i,interior:addInterior(cube,p.accent,false)};
+      // a small accent crystal frozen inside, refracted by the glass -> each cube has a glowing heart
+      const shard=new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,0),new THREE.MeshStandardMaterial({color:new THREE.Color(p.accent),emissive:new THREE.Color(p.accent),emissiveIntensity:1.5,roughness:0.35,metalness:0,flatShading:true}));
+      cube.add(shard); cube.userData.shard=shard;
+      cluster.add(cube); clickable.push(cube);
+    });
+
+    // RYNH hover menu -> jump straight into a service cube (for the scroll-averse)
+    { const navmenu=document.getElementById('navmenu');
+      SERVICES.forEach((s,i)=>{ const cube=clickable[i+1];
+        const li=document.createElement('li'), b=document.createElement('button');
+        b.innerHTML='<span class="dot" style="background:'+s.accent+';color:'+s.accent+'"></span>'+s.title;
+        b.addEventListener('click',()=>{ if(mode==='CLUSTER') diveInto(cube); });
+        li.appendChild(b); navmenu.appendChild(li); }); }
+    { const sb=document.getElementById('sound'),ss=document.getElementById('sound-state');
+      sb.addEventListener('click',()=>{ sfx.resume(); ss.textContent=sfx.toggle()?'On':'Off'; }); }
+
+    const dustN=600,dpos=new Float32Array(dustN*3);
+    for(let i=0;i<dustN;i++){ dpos[i*3]=(Math.random()-.5)*40; dpos[i*3+1]=(Math.random()-.5)*30; dpos[i*3+2]=(Math.random()-.5)*40; }
+    const dustGeo=new THREE.BufferGeometry(); dustGeo.setAttribute('position',new THREE.BufferAttribute(dpos,3));
+    const dust=new THREE.Points(dustGeo,new THREE.PointsMaterial({color:0xbfe6ff,size:0.03,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false}));
+    scene.add(dust);
+
+    // 4 small distinct orbs: defined balls with a tight glow, loosely follow cursor, dance, bloom-scatter on click
+    function orbTex(){ const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d');
+      const rg=g.createRadialGradient(64,64,0,64,64,64);
+      rg.addColorStop(0,'rgba(255,255,255,1)'); rg.addColorStop(0.30,'rgba(246,251,255,.98)');  // solid ball core
+      rg.addColorStop(0.42,'rgba(190,225,255,.5)'); rg.addColorStop(1,'rgba(140,185,255,0)');     // tight glow halo
+      g.fillStyle=rg; g.fillRect(0,0,128,128); return new THREE.CanvasTexture(c); }
+    const orbMap=orbTex(), TRAIL=14, orbs=[];
+    const orbSpec=[{col:0xeaf4ff,sc:0.30,rad:1.05,spd:0.40,ph:0.0},{col:0x8fb6ff,sc:0.22,rad:0.8,spd:-0.55,ph:1.6},{col:0xa6e0e6,sc:0.27,rad:1.35,spd:0.46,ph:3.1},{col:0xc7b6ff,sc:0.24,rad:1.0,spd:-0.42,ph:4.7}];
+    for(const s of orbSpec){
+      const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:orbMap,color:s.col,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+      sp.scale.setScalar(s.sc); scene.add(sp);
+      const tg=new THREE.BufferGeometry(), tp=new Float32Array(TRAIL*3), tc=new Float32Array(TRAIL*3);
+      tg.setAttribute('position',new THREE.BufferAttribute(tp,3)); tg.setAttribute('color',new THREE.BufferAttribute(tc,3));
+      const tl=new THREE.Line(tg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(tl);
+      orbs.push({sp,tl,tp,tc,pos:new THREE.Vector3(),hist:[],rad:s.rad,spd:s.spd,ph:s.ph,col:new THREE.Color(s.col)});
+    }
+    let orbFade=0,orbSpread=0; const orbTarget=new THREE.Vector3(),orbLead=new THREE.Vector3();
+    function burstOrbs(){ orbSpread=1; }                              // smooth bloom outward, eases back
+    function updateOrbs(t){
+      orbTarget.set(ndc.x,ndc.y,0.5).unproject(camera);
+      orbTarget.sub(camera.position).normalize().multiplyScalar(4.5).add(camera.position);
+      orbLead.lerp(orbTarget,0.045);                                   // loose, laggy follow (not on the cursor)
+      orbFade=lerp(orbFade, mode==='DETAIL'?0:1, 0.06); orbSpread*=0.97;
+      for(const o of orbs){ const a=t*o.spd+o.ph, rad=o.rad*(1+orbSpread*1.6);  // dance; bloom expands the radius
+        const tx=orbLead.x+Math.cos(a)*rad+Math.cos(t*0.5+o.ph)*0.2;
+        const ty=orbLead.y+Math.sin(a*1.1)*rad*0.8+Math.sin(t*0.45+o.ph)*0.2;
+        const tz=orbLead.z+Math.sin(a*0.6)*rad*0.6;
+        o.pos.x+=(tx-o.pos.x)*0.09; o.pos.y+=(ty-o.pos.y)*0.09; o.pos.z+=(tz-o.pos.z)*0.09;
+        o.sp.position.copy(o.pos); o.sp.material.opacity=0.95*orbFade;
+        o.hist.unshift(o.pos.clone()); if(o.hist.length>TRAIL)o.hist.pop();
+        for(let j=0;j<TRAIL;j++){ const p=o.hist[Math.min(j,o.hist.length-1)], f=(1-j/TRAIL)*0.5;
+          o.tp[j*3]=p.x;o.tp[j*3+1]=p.y;o.tp[j*3+2]=p.z; o.tc[j*3]=o.col.r*f;o.tc[j*3+1]=o.col.g*f;o.tc[j*3+2]=o.col.b*f; }
+        o.tl.material.opacity=orbFade; o.tl.geometry.attributes.position.needsUpdate=true; o.tl.geometry.attributes.color.needsUpdate=true; }
+    }
+
+    const key=new THREE.DirectionalLight(0xffffff,1.6); key.position.set(4,6,5); scene.add(key);
+    const rim=new THREE.DirectionalLight(0x88bbff,2.2); rim.position.set(-5,-1,-4); scene.add(rim);
+    scene.add(new THREE.AmbientLight(0x223355,0.4));
+    // one shared light parked at the active chamber's centre on dive -> lights the inner walls so they read as bright frosted ice, not black
+    const chamberLight=new THREE.PointLight(0xeaf4ff,0,4.5,1.5); scene.add(chamberLight);
+
+    const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+    const posPts=[V(0,1.3,15),V(-5,2.2,9),V(5.5,-1.2,5),V(0.5,-3.5,3.2),V(-4.5,1,-3.5),V(0,0.4,7.5),V(0,0,11)];
+    const tgtPts=[V(-3.4,0.2,0),V(-1.5,.3,0),V(1.2,-.2,0),V(0,.5,0),V(0,0,0),V(0,0,0),V(0,0,0)];
+    const posCurve=new THREE.CatmullRomCurve3(posPts,false,'catmullrom',0.5);
+    const tgtCurve=new THREE.CatmullRomCurve3(tgtPts,false,'catmullrom',0.5);
+    const camState={x:0,y:1.5,z:16,tx:0,ty:0,tz:0};
+    const tmpP=new THREE.Vector3(),tmpT=new THREE.Vector3();
+    function sampleCurves(p){ posCurve.getPoint(clamp(p,0,1),tmpP); tgtCurve.getPoint(clamp(p,0,1),tmpT); }
+
+    let composer=null,bloom=null,bokeh=null,grade=null;
+    if(!reduce){
+      composer=new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene,camera));
+      bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.55,0.5,0.72); composer.addPass(bloom);
+      if(!isMobile){ try{ bokeh=new BokehPass(scene,camera,{focus:8,aperture:0.00018,maxblur:0.006}); composer.addPass(bokeh); }catch(e){ bokeh=null; } }
+      grade=new ShaderPass({
+        uniforms:{tDiffuse:{value:null},t:{value:0},uTrans:{value:0}},
+        vertexShader:'varying vec2 v; void main(){ v=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+        fragmentShader:'uniform sampler2D tDiffuse; uniform float t,uTrans; varying vec2 v;'
+          +'float rnd(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }'
+          +'void main(){ vec2 uv=v; vec2 dir=uv-vec2(0.5); float dist=length(dir);'
+          +'float n=rnd(floor(uv*120.0)+floor(t*8.0));'                                  // frost displacement during dive
+          +'uv-=dir*uTrans*0.12 + (vec2(n,rnd(uv+t))-0.5)*uTrans*0.05;'
+          +'float ca=0.0012 + uTrans*0.02*(0.3+dist); vec2 o=dir*ca;'                    // chromatic aberration (base + transition)
+          +'vec3 c; c.r=texture2D(tDiffuse,uv+o).r; c.g=texture2D(tDiffuse,uv).g; c.b=texture2D(tDiffuse,uv-o).b;'
+          +'c=mix(c, c*1.1+vec3(0.10,0.13,0.18)*uTrans, uTrans*0.6);'                    // frost whiten flash
+          +'c*=vec3(0.98,0.99,1.03); c*=smoothstep(0.95,0.35,dist);'
+          +'c+=(rnd(v+t)-0.5)*(0.022+uTrans*0.05); gl_FragColor=vec4(c,1.0); }'
+      });
+      composer.addPass(grade);
+      composer.addPass(new OutputPass());
+    }
+    function setFocus(v){ if(!bokeh)return; const u=bokeh.uniforms||(bokeh.materialBokeh&&bokeh.materialBokeh.uniforms); if(u&&u.focus)u.focus.value=v; }
+
+    let targetP=0,smooth=0;
+    function onScroll(){ const d=document.documentElement.scrollHeight-innerHeight; targetP=d>0?clamp(scrollY/d,0,1):0; }
+    addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+    const beats={hero:document.getElementById('beat-hero'),b1:document.getElementById('beat-1'),b2:document.getElementById('beat-2'),b3:document.getElementById('beat-3'),contact:document.getElementById('beat-contact')};
+    const hint=document.getElementById('hint');
+    const win=(p,a,b,f=0.05)=>clamp(Math.min((p-a)/f,(b-p)/f),0,1);
+    function updateCaptions(p){
+      beats.hero.style.opacity=win(p,-1,0.10,0.08);
+      beats.b1.style.opacity=win(p,0.14,0.28);
+      beats.b2.style.opacity=win(p,0.40,0.56);
+      beats.b3.style.opacity=win(p,0.60,0.78);
+      beats.contact.style.opacity=win(p,0.88,1.2,0.08);
+      hint.style.opacity=p<0.06?1:0;
+    }
+
+    const raycaster=new THREE.Raycaster();
+    const ndc=new THREE.Vector2(); let pointerInside=false,hovered=null;
+    const label=document.getElementById('hover-label');
+    addEventListener('pointermove',e=>{ ndc.x=(e.clientX/innerWidth)*2-1; ndc.y=-(e.clientY/innerHeight)*2+1; pointerInside=true; },{passive:true});
+    addEventListener('pointerleave',()=>pointerInside=false);
+    function updateHover(){
+      let hit=null;
+      if(pointerInside){ raycaster.setFromCamera(ndc,camera); hit=raycaster.intersectObjects(clickable,false)[0]?.object||null; }
+      if(hit!==hovered){ hovered=hit; document.body.style.cursor=hit?'pointer':''; if(hit) sfx.hover(); }
+      clickable.forEach(c=>{ const on=c===hovered;
+        c.material.emissiveIntensity=lerp(c.material.emissiveIntensity,on?1.2:0,0.15);
+        c.scale.setScalar(lerp(c.scale.x,on?1.09:1,0.15)); });
+      if(hovered){ const w=new THREE.Vector3(); hovered.getWorldPosition(w); w.project(camera);
+        label.textContent=hovered.userData.project.title;
+        label.style.left=((w.x*0.5+0.5)*innerWidth)+'px'; label.style.top=((-w.y*0.5+0.5)*innerHeight)+'px';
+        label.classList.add('show'); } else label.classList.remove('show');
+    }
+
+    // ---------- dive: feels like looking INTO the cube, camera stays alive ----------
+    let mode='CLUSTER',dive=null,lastCube=null,detailBase=null;
+    function applyDissolve(cube,d){ const u=cube.userData;
+      cube.material.transmission=lerp(u.baseTransmission,0.0,d);
+      cube.material.opacity=lerp(1,0,d);   // fully fade the shell so there's no white cube once inside
+      cube.material.thickness=lerp(u.baseThickness,4.5,d);
+    }
+    // walls show ONLY while the camera is actually inside the shell -> never bleed outside, on enter OR exit
+    function setInterior(cube,w){ const u=cube.userData; if(!u.interior)return;
+      u.interior.walls.material.opacity=w; u.interior.glow.material.opacity=w*0.95;
+      const c=new THREE.Vector3(); cube.getWorldPosition(c); chamberLight.position.copy(c); chamberLight.intensity=w*5; }
+    function camInsideness(cube){ const c=new THREE.Vector3(); cube.getWorldPosition(c);
+      const dist=Math.hypot(camState.x-c.x,camState.y-c.y,camState.z-c.z);
+      const rIn=cube.userData.isCore?0.55:0.38, rOut=cube.userData.isCore?1.25:0.62;
+      return clamp(1-(dist-rIn)/(rOut-rIn),0,1); }
+    // empty the void as we dive so the background cuts off at the cube edges, not bleeding around it
+    function setSceneDim(d){
+      dust.material.opacity=0.5*(1-d);
+      const keep=dive&&dive.cube;
+      clickable.forEach(c=>{ if(c!==keep) c.material.opacity=1-d; });
+    }
+    function diveInto(cube){
+      if(mode!=='CLUSTER')return; mode='DIVING'; lastCube=cube; sfx.resume(); sfx.whoosh(-1); burstOrbs();
+      document.body.style.overflow='hidden'; label.classList.remove('show'); hovered=null; document.body.style.cursor='';
+      beats.hero.style.opacity=beats.b1.style.opacity=beats.b2.style.opacity=beats.b3.style.opacity=beats.contact.style.opacity='0'; hint.style.opacity='0';
+      const isCore=cube.userData.isCore;
+      const target=new THREE.Vector3(); cube.getWorldPosition(target);
+      const fromP=V(camState.x,camState.y,camState.z),fromT=V(camState.tx,camState.ty,camState.tz);
+      let toP;
+      if(isCore){ toP=target.clone().add(new THREE.Vector3(0,0.15,4.6)); }   // RYNH: pull to a centered front view, no chamber
+      else { cube.userData.interior.walls.visible=true; cube.userData.interior.glow.visible=true;
+        const dir=fromP.clone().sub(target).normalize(); toP=target.clone().addScaledVector(dir,0.7); }  // stand off in the chamber, clear of the centre shard (was 0.32 = buried in it -> clipping + inside-out view)
+      dive={t0:performance.now(),dur:reduce?0:2400,fromP,toP,fromT,toT:target.clone(),cube,phase:'in',core:isCore};
+      if(reduce){ camState.x=toP.x;camState.y=toP.y;camState.z=toP.z;camState.tx=target.x;camState.ty=target.y;camState.tz=target.z; if(!isCore){applyDissolve(cube,1);setInterior(cube,1);} setSceneDim(1); finishIn(cube); dive=null; }
+    }
+    function finishIn(cube){ mode='DETAIL';
+      if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); }   // lock the resting chamber: shell gone, walls full
+      detailBase={x:camState.x,y:camState.y,z:camState.z,tx:camState.tx,ty:camState.ty,tz:camState.tz}; openPanel(cube.userData.project); }
+    function exitDive(){
+      if(mode!=='DETAIL')return; mode='EXITING'; closePanel(); detailBase=null; sfx.whoosh(1);
+      sampleCurves(smooth);
+      const fromP=V(camState.x,camState.y,camState.z),fromT=V(camState.tx,camState.ty,camState.tz);
+      dive={t0:performance.now(),dur:reduce?0:1600,fromP,toP:tmpP.clone(),fromT,toT:tmpT.clone(),cube:lastCube,phase:'out',core:lastCube&&lastCube.userData.isCore};
+      if(reduce){ if(!dive.core){applyDissolve(lastCube,0);setInterior(lastCube,0);} setSceneDim(0); finishOut(); dive=null; }
+    }
+    function finishOut(){ mode='CLUSTER'; document.body.style.overflow='';
+      if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false; lastCube.userData.interior.glow.visible=false; } }
+    function updateDive(){
+      if(!dive)return;
+      const k=dive.dur?clamp((performance.now()-dive.t0)/dive.dur,0,1):1, e=dive.phase==='in'?easeOutCubic(k):easeInOutCubic(k);
+      tmpP.copy(dive.fromP).lerp(dive.toP,e); tmpT.copy(dive.fromT).lerp(dive.toT,e);
+      camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z;
+      if(!dive.core){ const cc=new THREE.Vector3(); dive.cube.getWorldPosition(cc);
+        const dist=Math.hypot(camState.x-cc.x,camState.y-cc.y,camState.z-cc.z);
+        setInterior(dive.cube, clamp(1-(dist-0.9)/(1.4-0.9),0,1));     // walls full by the time we cross the 0.9 wall, fade in over the approach
+        applyDissolve(dive.cube, clamp((1.5-dist)/0.6,0,1)); }         // shell fully gone before we reach the 0.7 standoff
+      setSceneDim(dive.phase==='in'?clamp((e-0.1)/0.7,0,1):clamp(1-e,0,1));
+      if(bloom)bloom.strength=dive.phase==='in'?lerp(0.55,0.38,e):lerp(0.38,0.55,e);
+      if(k>=1){ if(dive.phase==='in'){ const c=dive.cube; dive=null; finishIn(c); } else { dive=null; finishOut(); } }
+    }
+
+    const D={el:document.getElementById('detail'),card:document.querySelector('#detail .card'),eye:document.getElementById('d-eyebrow'),title:document.getElementById('d-title'),blurb:document.getElementById('d-blurb'),actions:document.getElementById('d-actions')};
+    function openPanel(p){
+      D.eye.textContent=p.kind; D.eye.style.color=p.accent; D.title.textContent=p.title; D.blurb.textContent=p.blurb;
+      const subject=encodeURIComponent((p.isCore?'Hello Ryan':p.title)+' inquiry');
+      D.actions.innerHTML=`<a class="btn btn-go" href="mailto:ryanhosseini12@gmail.com?subject=${subject}">Let’s talk →</a><button class="btn btn-ghost" data-close>Back to the cluster</button>`;
+      D.el.classList.add('is-open');
+    }
+    function closePanel(){ D.el.classList.remove('is-open'); D.card.style.transform=''; }
+    D.el.addEventListener('click',e=>{ if(e.target.hasAttribute('data-close')) exitDive(); });
+    addEventListener('keydown',e=>{ if(e.key==='Escape'&&mode==='DETAIL') exitDive(); });
+    renderer.domElement.addEventListener('click',e=>{
+      sfx.resume(); burstOrbs(); sfx.blip();
+      if(mode==='DETAIL'){ exitDive(); return; }
+      if(mode!=='CLUSTER')return;
+      ndc.x=(e.clientX/innerWidth)*2-1; ndc.y=-(e.clientY/innerHeight)*2+1;
+      raycaster.setFromCamera(ndc,camera);
+      const hit=raycaster.intersectObjects(clickable,false)[0]; if(hit) diveInto(hit.object);
+    });
+
+    addEventListener('resize',()=>{
+      camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth,innerHeight);
+      composer&&composer.setSize(innerWidth,innerHeight); bloom&&bloom.setSize(innerWidth,innerHeight);
+    });
+
+    const clock=new THREE.Clock(); let firstFrame=true;
+    function tick(){
+      requestAnimationFrame(tick);
+      const t=clock.getElapsedTime();
+      if(mode==='CLUSTER'){ smooth=reduce?targetP:lerp(smooth,targetP,0.06); sampleCurves(smooth);
+        camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z; }
+      else if(mode==='DETAIL'&&detailBase){
+        const px=reduce?0:ndc.x, py=reduce?0:ndc.y;
+        // position LOCKED (no wall clipping); only a small look-around by panning the gaze toward the edges
+        camState.x=detailBase.x; camState.y=detailBase.y; camState.z=detailBase.z;   // locked, no clipping
+        camState.tx=lerp(camState.tx,detailBase.tx+px*0.16,0.07); camState.ty=lerp(camState.ty,detailBase.ty-py*0.1,0.07); camState.tz=detailBase.tz;  // gentle eased look-around, stays framed on the lit centre (no swinging to face a bare wall)
+        if(!reduce) D.card.style.transform=`translate3d(${px*9}px,${-py*7}px,0) rotateX(${-py*2.4}deg) rotateY(${px*3}deg)`;
+        if(lastCube&&lastCube.userData.interior&&!dive){ lastCube.userData.interior.glow.rotation.y+=0.006; lastCube.userData.interior.walls.rotation.y+=0.0015; }
+      }
+      updateDive();
+      camera.position.set(camState.x,camState.y,camState.z);
+      camera.lookAt(camState.tx,camState.ty,camState.tz);
+      setFocus(camera.position.distanceTo(new THREE.Vector3(camState.tx,camState.ty,camState.tz)));
+
+      if(mode==='CLUSTER'){ if(!reduce){ cluster.rotation.y+=0.0008;
+          clickable.forEach(c=>{ if(!c.userData.isCore) c.position.y=c.userData.homeY+Math.sin(t*0.6+c.userData.idx*1.7)*0.12; }); }
+        updateHover(); }
+      core.userData.interior.glow.rotation.y-=0.01;
+      if(!reduce){ core.rotation.y=-cluster.rotation.y+Math.sin(t*0.3)*0.32; core.rotation.x=Math.sin(t*0.4)*0.08;  // RYNH stays readable, gentle sway
+        for(const c of clickable) if(c.userData.shard) c.userData.shard.rotation.set(t*0.3+c.userData.idx, t*0.4, 0); }
+      dust.rotation.y=t*0.01;
+      updateOrbs(t);
+      if(grade){ grade.uniforms.t.value=t; if(!dive) grade.uniforms.uTrans.value=0; }
+      if(mode==='CLUSTER') updateCaptions(smooth);
+
+      composer?composer.render():renderer.render(scene,camera);
+      if(firstFrame){ firstFrame=false; setTimeout(hideLoader,4000); }
+    }
+    tick();
+  }
+  </script>
+</body>
+</html>

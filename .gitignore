@@ -1,0 +1,5 @@
+# local working artifacts, not needed for the deployed site
+backups/
+models/
+textures/snow_rough_1k.jpg
+.DS_Store
