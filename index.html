@@ -419,9 +419,9 @@
       const acc=new THREE.Color(accent);
       const wallGeo=isCore?new THREE.IcosahedronGeometry(1.7,1):new THREE.BoxGeometry(1.8,1.8,1.8);
       const wallMat=new THREE.MeshStandardMaterial({
-        color:acc.clone().multiplyScalar(0.3),
-        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.07,  // tiny self-glow
-        roughness:0.9, metalness:0, side:THREE.BackSide, envMapIntensity:0.08,             // kill the HDRI lift so the chamber is genuinely dark behind the glass card (white text reads)
+        color:acc.clone().multiplyScalar(0.18),
+        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.04,  // barely-there self-glow
+        roughness:0.9, metalness:0, side:THREE.BackSide, envMapIntensity:0.05,             // kill the HDRI lift so the chamber is genuinely dark behind the glass card
         normalMap:frost, transparent:true, opacity:0, depthWrite:false });
       wallMat.normalScale.set(0.55,0.55);
       const walls=new THREE.Mesh(wallGeo,wallMat); walls.visible=false; parent.add(walls);
@@ -445,18 +445,18 @@
     // RYNH crystal in Syncopate: converted to a three.js typeface (subset R,Y,N,H) and inlined so it stays offline/single-file
     const SYNCOPATE_RYNH={"glyphs":{"R":{"ha":1892,"x_min":215,"x_max":1841,"o":"m 586 506 l 586 0 l 215 0 l 215 1374 l 1145 1374 q 1400 1343 1295 1374 q 1570 1255 1504 1312 q 1665 1118 1635 1198 q 1694 938 1694 1037 l 1694 938 q 1670 786 1694 851 q 1604 675 1645 721 q 1507 596 1562 628 q 1391 543 1452 564 l 1391 543 l 1841 0 l 1407 0 l 991 506 l 586 506 m 1319 940 l 1319 940 q 1309 1008 1319 980 q 1272 1054 1298 1036 q 1203 1079 1246 1071 q 1094 1087 1159 1087 l 1094 1087 l 586 1087 l 586 793 l 1094 793 q 1203 801 1159 793 q 1272 827 1246 809 q 1309 872 1298 844 q 1319 940 1319 900"},"Y":{"ha":1784,"x_min":41,"x_max":1743,"o":"m 1743 1374 l 1077 561 l 1077 0 l 707 0 l 707 561 l 41 1374 l 457 1374 l 893 821 l 1327 1374 l 1743 1374"},"N":{"ha":2130,"x_min":215,"x_max":1915,"o":"m 1915 0 l 1513 0 l 586 944 l 586 0 l 215 0 l 215 1374 l 618 1374 l 1546 426 l 1546 1374 l 1915 1374 l 1915 0"},"H":{"ha":2116,"x_min":215,"x_max":1901,"o":"m 1901 0 l 1530 0 l 1530 573 l 586 573 l 586 0 l 215 0 l 215 1374 l 586 1374 l 586 874 l 1530 874 l 1530 1374 l 1901 1374 l 1901 0"}},"familyName":"Syncopate","ascender":1556,"descender":-426,"underlinePosition":-100,"underlineThickness":50,"boundingBox":{"yMin":-426,"xMin":0,"yMax":1556,"xMax":2048},"resolution":2048,"original_font_information":{"font_family_name":"Syncopate","font_subfamily_name":"Bold"},"cssFontWeight":"bold","cssFontStyle":"normal"};
     { const font=new FontLoader().parse(SYNCOPATE_RYNH);
-      const g=new TextGeometry('RYNH',{font,size:0.85,depth:0.42,curveSegments:2,bevelEnabled:true,bevelThickness:0.05,bevelSize:0.05,bevelSegments:2});  // chunkier bevel + a little more geo so the dents read as facets
+      const g=new TextGeometry('RYNH',{font,size:0.85,depth:0.42,curveSegments:1,bevelEnabled:true,bevelThickness:0.035,bevelSize:0.03,bevelSegments:1});  // thin bevel (no chunky edges)
       g.center();
-      // coarse vertex displacement -> BIG crystalline dents/facets (flatShading turns them into angular faces), instead of fine surface texture
+      // BIGGER coarse vertex displacement -> larger crystalline dents/facets (flatShading makes them angular)
       { const p=g.attributes.position, nr=g.attributes.normal, v=new THREE.Vector3();
         for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i);
-          const d=0.04*(Math.sin(v.x*2.6)*0.5+Math.cos(v.y*3.0)*0.5+Math.sin(v.z*2.3+v.y*1.4)*0.5);
+          const d=0.06*(Math.sin(v.x*2.4)*0.5+Math.cos(v.y*2.8)*0.5+Math.sin(v.z*2.1+v.y*1.3)*0.5);
           p.setXYZ(i, v.x+nr.getX(i)*d, v.y+nr.getY(i)*d, v.z+nr.getZ(i)*d); }
         g.computeVertexNormals(); }
       core.geometry.dispose(); core.geometry=g;
-      // coarser + deeper normal map = bigger dents in the refraction, not fine frost
-      const cN=snowNormal.clone(); cN.needsUpdate=true; cN.wrapS=cN.wrapT=THREE.RepeatWrapping; cN.repeat.set(0.55,0.55);
-      core.material.normalMap=cN; core.material.normalScale.set(0.8,0.8); core.material.clearcoatNormalScale.set(0.4,0.4); core.material.needsUpdate=true; }
+      // coarser + deeper normal map = even bigger dents
+      const cN=snowNormal.clone(); cN.needsUpdate=true; cN.wrapS=cN.wrapT=THREE.RepeatWrapping; cN.repeat.set(0.4,0.4);
+      core.material.normalMap=cN; core.material.normalScale.set(1.0,1.0); core.material.clearcoatNormalScale.set(0.5,0.5); core.material.needsUpdate=true; }
 
     const R=4.3, phi=Math.PI*(3-Math.sqrt(5));
     // crystalline ice cube: rounded box with subtle "grown ice" vertex displacement
@@ -669,8 +669,9 @@
     }
     function finishIn(cube){ mode='DETAIL';
       if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); chamberLight.intensity=CHL_REST;   // lock the resting chamber: shell gone, walls full, lights + crystal OFF (dark so the glass card reads)
-        if(cube.userData.shard) cube.userData.shard.material.emissiveIntensity=0; cube.userData.interior.glow.material.emissiveIntensity=0;
-        if(grade) grade.uniforms.uDesat.value=1; }   // hold the cube colourless while inside
+        if(cube.userData.shard){ cube.userData.shard.material.emissiveIntensity=0; cube.userData.shard.material.envMapIntensity=0; }
+        cube.userData.interior.glow.material.emissiveIntensity=0; cube.userData.interior.glow.material.envMapIntensity=0;
+        if(grade) grade.uniforms.uDesat.value=1; }   // hold the cube colourless + dark while inside
       detailBase={x:camState.x,y:camState.y,z:camState.z,tx:camState.tx,ty:camState.ty,tz:camState.tz}; openPanel(cube.userData.project); }
     function exitDive(){
       if(mode!=='DETAIL')return; mode='EXITING'; closePanel(); detailBase=null; sfx.whoosh(1);
@@ -680,8 +681,8 @@
       if(reduce){ if(!dive.core){applyDissolve(lastCube,0);setInterior(lastCube,0);} setSceneDim(0); finishOut(); dive=null; }
     }
     function finishOut(){ mode='CLUSTER'; document.body.style.overflow=''; document.body.classList.remove('detail');
-      if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false; lastCube.userData.interior.glow.visible=false; lastCube.userData.interior.glow.material.emissiveIntensity=2.6;
-        if(lastCube.userData.shard) lastCube.userData.shard.material.emissiveIntensity=1.5; } chamberLight.intensity=0;
+      if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false; lastCube.userData.interior.glow.visible=false; lastCube.userData.interior.glow.material.emissiveIntensity=2.6; lastCube.userData.interior.glow.material.envMapIntensity=1;
+        if(lastCube.userData.shard){ lastCube.userData.shard.material.emissiveIntensity=1.5; lastCube.userData.shard.material.envMapIntensity=1; } } chamberLight.intensity=0;
       if(grade) grade.uniforms.uDesat.value=0; }   // restore the crystal glow + colour for cluster view
     function updateDive(){
       if(!dive)return;
@@ -698,8 +699,8 @@
         const crystalDimP=dive.phase==='in'?inP:1-e;                    // crystal (shard+glow) glows on the approach then fades OFF inside -> dark chamber so the glass card reads; back ON as we leave
         chamberLight.intensity=w*lerp(CHL_PEAK,CHL_REST,lightDimP);
         const u=dive.cube.userData;
-        if(u.shard) u.shard.material.emissiveIntensity=lerp(1.5,0,crystalDimP);
-        u.interior.glow.material.emissiveIntensity=lerp(2.6,0,crystalDimP); }
+        if(u.shard){ u.shard.material.emissiveIntensity=lerp(1.5,0,crystalDimP); u.shard.material.envMapIntensity=lerp(1,0,crystalDimP); }   // also kill the HDRI reflection so the gem goes dark inside
+        const gm=u.interior.glow.material; gm.emissiveIntensity=lerp(2.6,0,crystalDimP); gm.envMapIntensity=lerp(1,0,crystalDimP); }
       setSceneDim(dive.phase==='in'?clamp((e-0.1)/0.7,0,1):clamp(1-e,0,1));
       if(bloom)bloom.strength=dive.phase==='in'?lerp(0.55,0.38,e):lerp(0.38,0.55,e);
       if(grade)grade.uniforms.uDesat.value=dive.core?0:(dive.phase==='in'?e:1-e);   // cube drains to grayscale going in, colour returns on exit; RYNH dive stays colour
