@@ -568,9 +568,9 @@
       bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.55,0.5,0.72); composer.addPass(bloom);
       if(!isMobile){ try{ bokeh=new BokehPass(scene,camera,{focus:8,aperture:0.00018,maxblur:0.006}); composer.addPass(bokeh); }catch(e){ bokeh=null; } }
       grade=new ShaderPass({
-        uniforms:{tDiffuse:{value:null},t:{value:0},uTrans:{value:0}},
+        uniforms:{tDiffuse:{value:null},t:{value:0},uTrans:{value:0},uDesat:{value:0}},
         vertexShader:'varying vec2 v; void main(){ v=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
-        fragmentShader:'uniform sampler2D tDiffuse; uniform float t,uTrans; varying vec2 v;'
+        fragmentShader:'uniform sampler2D tDiffuse; uniform float t,uTrans,uDesat; varying vec2 v;'
           +'float rnd(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }'
           +'void main(){ vec2 uv=v; vec2 dir=uv-vec2(0.5); float dist=length(dir);'
           +'float n=rnd(floor(uv*120.0)+floor(t*8.0));'                                  // frost displacement during dive
@@ -579,7 +579,9 @@
           +'vec3 c; c.r=texture2D(tDiffuse,uv+o).r; c.g=texture2D(tDiffuse,uv).g; c.b=texture2D(tDiffuse,uv-o).b;'
           +'c=mix(c, c*1.1+vec3(0.10,0.13,0.18)*uTrans, uTrans*0.6);'                    // frost whiten flash
           +'c*=vec3(0.98,0.99,1.03); c*=smoothstep(0.95,0.35,dist);'
-          +'c+=(rnd(v+t)-0.5)*(0.022+uTrans*0.05); gl_FragColor=vec4(c,1.0); }'
+          +'c+=(rnd(v+t)-0.5)*(0.022+uTrans*0.05);'
+          +'c=mix(c, vec3(dot(c,vec3(0.2126,0.7152,0.0722))), clamp(uDesat,0.0,1.0));'      // drain colour when diving into a cube
+          +'gl_FragColor=vec4(c,1.0); }'
       });
       composer.addPass(grade);
       composer.addPass(new OutputPass());
@@ -657,7 +659,8 @@
     }
     function finishIn(cube){ mode='DETAIL';
       if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); chamberLight.intensity=CHL_REST;   // lock the resting chamber: shell gone, walls full, lights + crystal OFF (dark so the glass card reads)
-        if(cube.userData.shard) cube.userData.shard.material.emissiveIntensity=0; cube.userData.interior.glow.material.emissiveIntensity=0; }
+        if(cube.userData.shard) cube.userData.shard.material.emissiveIntensity=0; cube.userData.interior.glow.material.emissiveIntensity=0;
+        if(grade) grade.uniforms.uDesat.value=1; }   // hold the cube colourless while inside
       detailBase={x:camState.x,y:camState.y,z:camState.z,tx:camState.tx,ty:camState.ty,tz:camState.tz}; openPanel(cube.userData.project); }
     function exitDive(){
       if(mode!=='DETAIL')return; mode='EXITING'; closePanel(); detailBase=null; sfx.whoosh(1);
@@ -668,7 +671,8 @@
     }
     function finishOut(){ mode='CLUSTER'; document.body.style.overflow=''; document.body.classList.remove('detail');
       if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false; lastCube.userData.interior.glow.visible=false; lastCube.userData.interior.glow.material.emissiveIntensity=2.6;
-        if(lastCube.userData.shard) lastCube.userData.shard.material.emissiveIntensity=1.5; } chamberLight.intensity=0; }   // restore the crystal glow for cluster view
+        if(lastCube.userData.shard) lastCube.userData.shard.material.emissiveIntensity=1.5; } chamberLight.intensity=0;
+      if(grade) grade.uniforms.uDesat.value=0; }   // restore the crystal glow + colour for cluster view
     function updateDive(){
       if(!dive)return;
       const k=dive.dur?clamp((performance.now()-dive.t0)/dive.dur,0,1):1, e=dive.phase==='in'?easeOutCubic(k):easeInOutCubic(k);
@@ -688,6 +692,7 @@
         u.interior.glow.material.emissiveIntensity=lerp(2.6,0,crystalDimP); }
       setSceneDim(dive.phase==='in'?clamp((e-0.1)/0.7,0,1):clamp(1-e,0,1));
       if(bloom)bloom.strength=dive.phase==='in'?lerp(0.55,0.38,e):lerp(0.38,0.55,e);
+      if(grade)grade.uniforms.uDesat.value=dive.core?0:(dive.phase==='in'?e:1-e);   // cube drains to grayscale going in, colour returns on exit; RYNH dive stays colour
       if(k>=1){ if(dive.phase==='in'){ const c=dive.cube; dive=null; finishIn(c); } else { dive=null; finishOut(); } }
     }
 
