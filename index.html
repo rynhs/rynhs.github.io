@@ -735,6 +735,7 @@
       detailBase={x:camState.x,y:camState.y,z:camState.z,tx:camState.tx,ty:camState.ty,tz:camState.tz}; openPanel(cube.userData.project); }
     function exitDive(){
       if(mode!=='DETAIL')return; mode='EXITING'; closePanel(); detailBase=null; sfx.whoosh(1);
+      document.body.classList.remove('detail');   // drop it NOW so the HUD (topbar/sound) eases back in DURING the exit (.45s), not popping at the end
       clusterCam(smooth);
       const fromP=V(camState.x,camState.y,camState.z),fromT=V(camState.tx,camState.ty,camState.tz);
       dive={t0:performance.now(),dur:reduce?0:1600,fromP,toP:tmpP.clone(),fromT,toT:tmpT.clone(),cube:lastCube,phase:'out',core:lastCube&&lastCube.userData.isCore};
@@ -812,9 +813,9 @@
       camera.updateMatrixWorld();   // ensure a valid world matrix before the orbs unproject through it (else first-frame NaN)
       setFocus(camera.position.distanceTo(new THREE.Vector3(camState.tx,camState.ty,camState.tz)));
 
-      if(mode==='CLUSTER'){ if(!reduce){
-          clickable.forEach(c=>{ if(!c.userData.isCore && c!==hovered) c.position.y=c.userData.homeY+Math.sin(t*0.6+c.userData.idx*1.7)*0.07; }); }  // calm bob; hovered cube holds still so its glow doesn't shake
-        updateHover(); }
+      if(!reduce){ const skip=dive&&dive.cube;   // bob runs in every mode (not just cluster) so visible cubes don't jump to a new sine value when the dive ends
+        clickable.forEach(c=>{ if(!c.userData.isCore && c!==hovered && c!==skip) c.position.y=c.userData.homeY+Math.sin(t*0.6+c.userData.idx*1.7)*0.07; }); }  // hovered/dived cube holds still
+      if(mode==='CLUSTER') updateHover();
       if(!reduce){ const sway=1-ryW; core.rotation.y=(-cluster.rotation.y+Math.sin(t*0.3)*0.32)*sway; core.rotation.x=0;  // upright (no tilt) so the icicles always hang straight down; gentle y-sway only
         for(const c of clickable) if(c.userData.shard) c.userData.shard.rotation.set(t*0.3+c.userData.idx, t*0.4, 0); }
       dust.rotation.y=t*0.01;
