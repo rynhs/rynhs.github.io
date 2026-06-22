@@ -132,6 +132,39 @@
   #detail .btn-ghost:hover{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.34)}
   #detail .close{position:absolute;top:20px;right:20px;width:34px;height:34px;display:grid;place-items:center;padding:0;font-size:16px;line-height:1;color:rgba(255,255,255,.78);cursor:pointer;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);transition:background .18s ease,color .18s ease,border-color .18s ease}
   #detail .close:hover{color:#fff;background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.3)}
+  /* contact: inline form modal */
+  #contact{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px}
+  #contact.is-open{display:flex}
+  #contact .scrim{position:absolute;inset:0;background:rgba(4,6,12,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  #contact .ct-card{position:relative;width:min(440px,100%);border-radius:18px;padding:30px 30px 24px;color:#eaf2ff;
+    background:linear-gradient(160deg,color-mix(in srgb,#8fdcff 15%,transparent),rgba(13,17,26,.74));
+    border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 70px -24px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.18);
+    -webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%)}
+  #contact .ct-x{position:absolute;top:15px;right:15px;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:rgba(255,255,255,.8);font-size:16px;line-height:1;cursor:pointer}
+  #contact .ct-x:hover{background:rgba(255,255,255,.13);color:#fff}
+  #contact .ct-eye{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#8fdcff;margin-bottom:10px}
+  #contact h3{font-family:"Space Grotesk";margin:0 0 6px;font-size:24px;font-weight:600;color:#fff}
+  #contact .ct-sub{margin:0 0 20px;font-size:14px;line-height:1.55;color:rgba(255,255,255,.66)}
+  #contact form{display:flex;flex-direction:column;gap:11px}
+  #contact .ct-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+  #contact input,#contact textarea{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;font:inherit;font-size:14px;color:#fff;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);transition:border-color .18s,background .18s}
+  #contact input::placeholder,#contact textarea::placeholder{color:rgba(255,255,255,.4)}
+  #contact input:focus,#contact textarea:focus{outline:none;border-color:#8fdcff;background:rgba(143,220,255,.08)}
+  #contact textarea{resize:vertical;min-height:92px}
+  #contact .ct-row{display:flex;gap:10px;margin-top:4px}
+  #contact .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 20px;font-size:14px;font-weight:600;border-radius:10px;cursor:pointer;border:1px solid transparent;text-decoration:none;transition:transform .15s,box-shadow .18s,background .18s}
+  #contact .btn:active{transform:translateY(1px)}
+  #contact .btn-go{flex:1;color:#06121c;background:linear-gradient(180deg,#bdeeff,#7fcdf0);border-color:#a6e4ff;box-shadow:0 8px 20px -10px rgba(143,220,255,.7)}
+  #contact .btn-go:hover{box-shadow:0 12px 26px -10px rgba(143,220,255,.85)}
+  #contact .btn-go[disabled]{opacity:.55;cursor:default}
+  #contact .btn-ghost{color:rgba(255,255,255,.88);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2)}
+  #contact .btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.34)}
+  #contact .ct-note{margin:14px 0 0;font-size:12.5px;color:rgba(255,255,255,.5);text-align:center}
+  #contact .ct-note a{color:rgba(255,255,255,.82)}
+  #contact .ct-status{margin:10px 0 0;font-size:13px;min-height:1em;text-align:center}
+  #contact .ct-status.sending{color:rgba(255,255,255,.7)} #contact .ct-status.ok{color:#7fe0a0} #contact .ct-status.err{color:#ff9bb0}
+  #contact .ct-status a{color:#8fdcff}
+  @media (prefers-reduced-transparency: reduce){ #contact .ct-card{background:#11151e} }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){ #detail .card{background:rgba(13,17,26,.92)} }
   @media (prefers-reduced-transparency: reduce){ #detail .card{background:#11151e;backdrop-filter:none;-webkit-backdrop-filter:none} #hover-label{background:#0a0e14} }
   @supports (backdrop-filter: url(#cardDistort)){ #detail .card{backdrop-filter:url(#cardDistort) blur(8px) saturate(150%)} }   /* Apple-style edge refraction (Chromium/Firefox); Safari keeps the plain -webkit blur above */
@@ -197,7 +230,7 @@
       <button class="mark" id="navmark" aria-haspopup="true"><span class="wm">RY<b>NH</b></span><span class="chev">⌄</span></button>
       <ul class="navmenu" id="navmenu"></ul>
     </div>
-    <a href="mailto:ryanhosseini12@gmail.com?subject=Let's%20talk">Let's talk →</a>
+    <a href="mailto:ryanhosseini12@gmail.com?subject=Let's%20talk" data-contact="Topbar">Let's talk →</a>
   </div>
 
   <div id="stage" aria-hidden="true"></div>
@@ -211,7 +244,7 @@
   <div class="beat mid" id="beat-2"><div class="inner"><h2>Engineering that reads the business.</h2><p>Most shops build exactly what you spec. RYNH builds what the operation actually needs, because it understands how you run.</p></div></div>
   <div class="beat" id="beat-contact">
     <h2>What should we build first?</h2>
-    <a class="cta" href="mailto:ryanhosseini12@gmail.com?subject=Project%20inquiry">Let's talk →</a>
+    <a class="cta" href="mailto:ryanhosseini12@gmail.com?subject=Project%20inquiry" data-contact="Contact section">Let's talk →</a>
   </div>
 
   <div id="hint">Scroll ↓</div>
@@ -242,6 +275,29 @@
       <h3 id="d-title"></h3>
       <p class="blurb" id="d-blurb"></p>
       <div class="actions" id="d-actions"></div>
+    </div>
+  </div>
+
+  <div id="contact" role="dialog" aria-modal="true" aria-labelledby="ct-title">
+    <div class="scrim" data-ct-close></div>
+    <div class="ct-card">
+      <button class="ct-x" data-ct-close aria-label="Close">×</button>
+      <div class="ct-eye">Let's talk</div>
+      <h3 id="ct-title">Let's build something.</h3>
+      <p class="ct-sub">Tell me what you're working on. I usually reply within a day.</p>
+      <form id="ct-form" novalidate>
+        <input class="ct-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <input type="text" name="name" placeholder="Your name" required autocomplete="name">
+        <input type="email" name="email" placeholder="Email" required autocomplete="email">
+        <textarea name="message" placeholder="What do you need built?" required></textarea>
+        <input type="hidden" name="source" id="ct-source" value="">
+        <div class="ct-row">
+          <button type="submit" class="btn btn-go ct-send">Send message →</button>
+          <a class="btn btn-ghost ct-call" id="ct-call" href="#" target="_blank" rel="noopener">Book a call</a>
+        </div>
+        <p class="ct-status" id="ct-status" role="status" aria-live="polite"></p>
+        <p class="ct-note">or email <a href="mailto:ryanhosseini12@gmail.com">ryanhosseini12@gmail.com</a></p>
+      </form>
     </div>
   </div>
 
@@ -772,13 +828,38 @@
     const D={el:document.getElementById('detail'),card:document.querySelector('#detail .card'),eye:document.getElementById('d-eyebrow'),title:document.getElementById('d-title'),blurb:document.getElementById('d-blurb'),actions:document.getElementById('d-actions')};
     function openPanel(p){
       D.eye.textContent=p.kind; D.eye.style.color=p.accent; D.card.style.setProperty('--accent',p.accent); D.title.textContent=p.title; D.blurb.textContent=p.blurb;
-      const subject=encodeURIComponent((p.isCore?'Hello Ryan':p.title)+' inquiry');
-      D.actions.innerHTML=`<a class="btn btn-go" href="mailto:ryanhosseini12@gmail.com?subject=${subject}">Let’s talk →</a><button class="btn btn-ghost" data-close>Back to the cluster</button>`;
+      const src=(p.isCore?'RYNH / Ryan':p.title).replace(/"/g,'');
+      D.actions.innerHTML=`<button class="btn btn-go" data-contact="${src}">Let’s talk →</button><button class="btn btn-ghost" data-close>Back to the cluster</button>`;
       D.el.classList.add('is-open');
     }
     function closePanel(){ D.el.classList.remove('is-open'); D.card.style.transform=''; }
     D.el.addEventListener('click',e=>{ if(e.target.hasAttribute('data-close')) exitDive(); });
     addEventListener('keydown',e=>{ if(e.key==='Escape'&&mode==='DETAIL') exitDive(); });
+
+    // ---- contact: inline form posting to your own mailer, with book-a-call + email fallback ----
+    const CONTACT_ENDPOINT='';   // ← upload rynh-contact.php to HostPapa, then put its URL here, e.g. 'https://canimpex.net/rynh-contact.php'
+    const CALENDLY_URL='';       // ← paste your Calendly/Cal.com link here, e.g. 'https://calendly.com/ryanhosseini/15min'  (empty = button hidden)
+    const CT={el:document.getElementById('contact'),form:document.getElementById('ct-form'),status:document.getElementById('ct-status'),source:document.getElementById('ct-source'),call:document.getElementById('ct-call'),
+              get send(){return this.form.querySelector('.ct-send');}, field(n){return this.form.querySelector('[name="'+n+'"]');}};
+    function openContact(src){ CT.source.value=src||'RYNH site'; CT.status.textContent=''; CT.status.className='ct-status';
+      CT.call.style.display=CALENDLY_URL?'':'none'; if(CALENDLY_URL)CT.call.href=CALENDLY_URL;
+      CT.el.classList.add('is-open'); sfx.resume(); setTimeout(()=>{try{CT.field('name').focus();}catch(_){}} ,80); }
+    function closeContact(){ CT.el.classList.remove('is-open'); }
+    CT.el.addEventListener('click',e=>{ if(e.target.hasAttribute('data-ct-close')) closeContact(); });
+    addEventListener('keydown',e=>{ if(e.key==='Escape'&&CT.el.classList.contains('is-open')) closeContact(); });
+    document.addEventListener('click',e=>{ const t=e.target.closest('[data-contact]'); if(t){ e.preventDefault(); openContact(t.getAttribute('data-contact')); } });
+    CT.form.addEventListener('submit',async e=>{ e.preventDefault();
+      if(CT.field('company').value){ closeContact(); return; }   // honeypot tripped -> silently drop
+      const fd=new FormData(CT.form);
+      const mailto=()=>{ const body='From: '+(fd.get('name')||'')+' <'+(fd.get('email')||'')+'>\n\n'+(fd.get('message')||''); location.href='mailto:ryanhosseini12@gmail.com?subject='+encodeURIComponent('RYNH inquiry — '+(fd.get('source')||''))+'&body='+encodeURIComponent(body); };
+      if(!CONTACT_ENDPOINT){ mailto(); return; }                 // backend not wired yet -> open a prefilled email
+      CT.send.disabled=true; CT.status.textContent='Sending…'; CT.status.className='ct-status sending';
+      try{ const r=await fetch(CONTACT_ENDPOINT,{method:'POST',body:fd}); const j=await r.json().catch(()=>({})); if(!r.ok||!j.success) throw 0;
+        CT.status.textContent="Thanks — I'll be in touch shortly."; CT.status.className='ct-status ok'; CT.form.reset();
+      }catch(_){ CT.status.innerHTML='Couldn’t send right now. <a href="#" id="ct-mailto">Email me directly →</a>'; CT.status.className='ct-status err';
+        const m=document.getElementById('ct-mailto'); if(m)m.addEventListener('click',ev=>{ev.preventDefault();mailto();}); }
+      finally{ CT.send.disabled=false; }
+    });
     renderer.domElement.addEventListener('click',e=>{
       sfx.resume(); burstOrbs(); sfx.blip();
       if(mode==='DETAIL'){ exitDive(); return; }
