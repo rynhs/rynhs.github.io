@@ -326,6 +326,7 @@
     const { TextGeometry }=await import('three/addons/geometries/TextGeometry.js');
     const { ImprovedNoise }=await import('three/addons/math/ImprovedNoise.js');
     const { RoundedBoxGeometry }=await import('three/addons/geometries/RoundedBoxGeometry.js');
+    const { mergeGeometries }=await import('three/addons/utils/BufferGeometryUtils.js');
     const { EffectComposer }=await import('three/addons/postprocessing/EffectComposer.js');
     const { RenderPass }=await import('three/addons/postprocessing/RenderPass.js');
     const { UnrealBloomPass }=await import('three/addons/postprocessing/UnrealBloomPass.js');
@@ -481,11 +482,34 @@
     // RYNH crystal in Syncopate: converted to a three.js typeface (subset R,Y,N,H) and inlined so it stays offline/single-file
     const SYNCOPATE_RYNH={"glyphs":{"R":{"ha":1892,"x_min":215,"x_max":1841,"o":"m 586 506 l 586 0 l 215 0 l 215 1374 l 1145 1374 q 1400 1343 1295 1374 q 1570 1255 1504 1312 q 1665 1118 1635 1198 q 1694 938 1694 1037 l 1694 938 q 1670 786 1694 851 q 1604 675 1645 721 q 1507 596 1562 628 q 1391 543 1452 564 l 1391 543 l 1841 0 l 1407 0 l 991 506 l 586 506 m 1319 940 l 1319 940 q 1309 1008 1319 980 q 1272 1054 1298 1036 q 1203 1079 1246 1071 q 1094 1087 1159 1087 l 1094 1087 l 586 1087 l 586 793 l 1094 793 q 1203 801 1159 793 q 1272 827 1246 809 q 1309 872 1298 844 q 1319 940 1319 900"},"Y":{"ha":1784,"x_min":41,"x_max":1743,"o":"m 1743 1374 l 1077 561 l 1077 0 l 707 0 l 707 561 l 41 1374 l 457 1374 l 893 821 l 1327 1374 l 1743 1374"},"N":{"ha":2130,"x_min":215,"x_max":1915,"o":"m 1915 0 l 1513 0 l 586 944 l 586 0 l 215 0 l 215 1374 l 618 1374 l 1546 426 l 1546 1374 l 1915 1374 l 1915 0"},"H":{"ha":2116,"x_min":215,"x_max":1901,"o":"m 1901 0 l 1530 0 l 1530 573 l 586 573 l 586 0 l 215 0 l 215 1374 l 586 1374 l 586 874 l 1530 874 l 1530 1374 l 1901 1374 l 1901 0"}},"familyName":"Syncopate","ascender":1556,"descender":-426,"underlinePosition":-100,"underlineThickness":50,"boundingBox":{"yMin":-426,"xMin":0,"yMax":1556,"xMax":2048},"resolution":2048,"original_font_information":{"font_family_name":"Syncopate","font_subfamily_name":"Bold"},"cssFontWeight":"bold","cssFontStyle":"normal"};
     { const font=new FontLoader().parse(SYNCOPATE_RYNH);
-      const g=new TextGeometry('RYNH',{font,size:0.85,depth:0.42,curveSegments:1,bevelEnabled:true,bevelThickness:0.035,bevelSize:0.03,bevelSegments:1});  // clean text, thin bevel
-      g.center(); core.geometry.dispose(); core.geometry=g;
-      // the ONLY change vs the cube glass: a slightly coarser normal map (bigger, softer dents). No displacement, no deeper scale, no bevel change.
-      const cN=snowNormal.clone(); cN.needsUpdate=true; cN.wrapS=cN.wrapT=THREE.RepeatWrapping; cN.repeat.set(0.8,0.8);
-      core.material.normalMap=cN; core.material.needsUpdate=true; }
+      const g=new TextGeometry('RYNH',{font,size:0.85,depth:0.42,curveSegments:4,bevelEnabled:true,bevelThickness:0.04,bevelSize:0.035,bevelSegments:2});
+      g.center();
+      // coarse ice dents (vertex displacement -> faceted crystal)
+      { const nz=new ImprovedNoise(), p=g.attributes.position, v=new THREE.Vector3(); g.computeVertexNormals(); const nr=g.attributes.normal;
+        for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i); const d=0.05*nz.noise(v.x*2.6,v.y*2.6,v.z*2.6);
+          p.setXYZ(i,v.x+nr.getX(i)*d,v.y+nr.getY(i)*d,v.z+nr.getZ(i)*d); } p.needsUpdate=true; g.computeVertexNormals(); }
+      g.computeBoundingBox(); const BB=g.boundingBox, probe=new THREE.Mesh(g,new THREE.MeshBasicMaterial());
+      // icicles grown from the bottom edge, merged into the wordmark = one continuous piece of ice
+      const ray=new THREE.Raycaster(), UP=new THREE.Vector3(0,1,0), Rr=(a,b)=>a+(b-a)*Math.random();
+      const cleanG=o=>{ const q=o.index?o.toNonIndexed():o.clone(); for(const k of Object.keys(q.attributes)) if(k!=='position'&&k!=='normal'&&k!=='uv') q.deleteAttribute(k); if(!q.attributes.normal)q.computeVertexNormals(); return q; };
+      const bottomY=(x,z)=>{ ray.set(new THREE.Vector3(x,BB.min.y-1,z),UP); const r=ray.intersectObject(probe,false); return (r.length&&r[0].face.normal.y<-0.2)?r[0].point.y:null; };
+      const fits=(x,z,y,r)=>{ for(const o of [[r,0],[-r,0],[0,r],[0,-r]]){ const yy=bottomY(x+o[0],z+o[1]); if(yy===null||Math.abs(yy-y)>0.12) return false; } return true; };
+      const YS=[0,0.10,0.22,0.40,0.55,0.72,0.86,0.95,1.0], RS=[1,0.85,0.96,0.64,0.73,0.44,0.29,0.13,0.02];
+      const icicle=(L,r0)=>{ const pts=[]; for(let i=0;i<YS.length;i++) pts.push(new THREE.Vector2(Math.max(0.004,r0*RS[i]),-L*YS[i])); return new THREE.LatheGeometry(pts,8).toNonIndexed(); };
+      const hits=[], hh=BB.max.y-BB.min.y, st=0.03;
+      for(let x=BB.min.x;x<=BB.max.x;x+=st)for(let z=BB.min.z+0.05;z<=BB.max.z-0.05;z+=st){ ray.set(new THREE.Vector3(x,BB.min.y-1,z),UP); const r=ray.intersectObject(probe,false); if(r.length&&r[0].face.normal.y<-0.25&&r[0].point.y<BB.min.y+hh*0.14) hits.push(r[0].point.clone()); }
+      hits.sort((a,b)=>a.x-b.x);
+      const bunches=[]; let cur=[]; for(const p of hits){ if(cur.length&&p.x-cur[cur.length-1].x>0.12){ bunches.push(cur); cur=[]; } cur.push(p); } if(cur.length) bunches.push(cur);
+      const parts=[cleanG(g)];
+      for(const b of bunches){ const minX=b[0].x, span=Math.max(1e-3,b[b.length-1].x-minX), used=[];
+        for(let k=0;k<3;k++){ const tx=minX+span*(0.18+0.64*k/2), cands=b.filter(p=>Math.abs(p.x-tx)<=st*1.6); if(!cands.length) continue;
+          for(let t=0;t<10;t++){ const p=cands[(Math.random()*cands.length)|0], r0=Rr(0.024,0.05), z=Math.min(Math.max(p.z,BB.min.z+r0+0.02),BB.max.z-r0-0.02);
+            if(!fits(p.x,z,p.y,r0+0.01)) continue; if(used.some(u=>Math.abs(u.x-p.x)<0.05&&Math.abs(u.z-z)<0.12)) continue;
+            const L=0.17+Math.pow(Math.random(),0.95)*0.47, ic=icicle(L,r0); ic.rotateZ(Rr(-0.06,0.06)); ic.translate(p.x,p.y+0.035,z); parts.push(cleanG(ic)); used.push({x:p.x,z}); break; } } }
+      core.geometry.dispose(); core.geometry=mergeGeometries(parts,false);
+      // cube snow texture, calmed so it reads frosted not shimmery
+      const cN=snowNormal.clone(); cN.needsUpdate=true; cN.wrapS=cN.wrapT=THREE.RepeatWrapping; cN.repeat.set(1.0,1.0);
+      const m=core.material; m.normalMap=cN; m.normalScale.set(0.18,0.18); m.roughness=0.14; m.clearcoatRoughness=0.18; m.iridescence=0.04; m.dispersion=0.3; m.needsUpdate=true; }
 
     const R=4.3, phi=Math.PI*(3-Math.sqrt(5));
     // crystalline ice cube: rounded box with subtle "grown ice" vertex displacement
@@ -786,7 +810,7 @@
       if(mode==='CLUSTER'){ if(!reduce){
           clickable.forEach(c=>{ if(!c.userData.isCore && c!==hovered) c.position.y=c.userData.homeY+Math.sin(t*0.6+c.userData.idx*1.7)*0.07; }); }  // calm bob; hovered cube holds still so its glow doesn't shake
         updateHover(); }
-      if(!reduce){ const sway=1-ryW; core.rotation.y=(-cluster.rotation.y+Math.sin(t*0.3)*0.32)*sway; core.rotation.x=Math.sin(t*0.4)*0.08*sway;  // gentle sway, damped to face-on during the RYNH fly-past
+      if(!reduce){ const sway=1-ryW; core.rotation.y=(-cluster.rotation.y+Math.sin(t*0.3)*0.32)*sway; core.rotation.x=0;  // upright (no tilt) so the icicles always hang straight down; gentle y-sway only
         for(const c of clickable) if(c.userData.shard) c.userData.shard.rotation.set(t*0.3+c.userData.idx, t*0.4, 0); }
       dust.rotation.y=t*0.01;
       updateOrbs(t);
