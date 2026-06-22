@@ -134,6 +134,7 @@
   #detail .close:hover{color:#fff;background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.3)}
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){ #detail .card{background:rgba(13,17,26,.92)} }
   @media (prefers-reduced-transparency: reduce){ #detail .card{background:#11151e;backdrop-filter:none;-webkit-backdrop-filter:none} #hover-label{background:#0a0e14} }
+  @supports (backdrop-filter: url(#cardDistort)){ #detail .card{backdrop-filter:url(#cardDistort) blur(8px) saturate(150%)} }   /* Apple-style edge refraction (Chromium/Firefox); Safari keeps the plain -webkit blur above */
 
   @property --frost-pos{ syntax:'<percentage>'; inherits:false; initial-value:-60%; }
   #loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;
@@ -216,6 +217,22 @@
   <div id="hint">Scroll ↓</div>
   <button id="sound" aria-pressed="true">♪ Sound: <span id="sound-state">On</span></button>
   <div id="hover-label"></div>
+
+  <!-- Apple-style edge refraction for the detail card (Chromium/Vivaldi; Safari falls back to plain frosted glass) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="cardDistort" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+    <feImage id="cardDistortMap" result="map" preserveAspectRatio="none"/>
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+  </filter></svg>
+  <script>
+  (function(){ var w=320,h=220,c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');
+    var img=x.createImageData(w,h),d=img.data,band=0.22,amp=118,e=function(v){return v*v*(3-2*v);};
+    for(var j=0;j<h;j++)for(var i=0;i<w;i++){var nx=i/(w-1),ny=j/(h-1),
+      l=Math.max(0,(band-nx)/band),r=Math.max(0,(nx-(1-band))/band),t=Math.max(0,(band-ny)/band),b=Math.max(0,(ny-(1-band))/band),
+      xd=(e(l)-e(r))*amp, yd=(e(t)-e(b))*amp, o=(j*w+i)*4;
+      d[o]=128+xd; d[o+1]=128+yd; d[o+2]=128; d[o+3]=255;}
+    x.putImageData(img,0,0); var u=c.toDataURL(); var m=document.getElementById('cardDistortMap');
+    m.setAttribute('href',u); m.setAttributeNS('http://www.w3.org/1999/xlink','href',u); })();
+  </script>
 
   <div id="detail" role="dialog" aria-modal="true" aria-labelledby="d-title">
     <div class="scrim" data-close></div>
