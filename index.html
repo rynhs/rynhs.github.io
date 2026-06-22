@@ -568,10 +568,12 @@
     let orbFade=0,orbSpread=0; const orbTarget=new THREE.Vector3(),orbLead=new THREE.Vector3();
     function burstOrbs(){ orbSpread=1; }                              // smooth bloom outward, eases back
     function updateOrbs(t){
-      orbTarget.set(ndc.x,ndc.y,0.5).unproject(camera);
-      orbTarget.sub(camera.position).normalize().multiplyScalar(4.5).add(camera.position);
-      orbLead.lerp(orbTarget,0.045);                                   // loose, laggy follow (not on the cursor)
-      orbFade=lerp(orbFade, mode==='DETAIL'?0:1, 0.06); orbSpread*=0.97;
+      const coreView=(dive&&dive.core)||(mode==='DETAIL'&&lastCube&&lastCube.userData.isCore);
+      if(coreView){ orbTarget.set(0,0,1).applyQuaternion(camera.quaternion).multiplyScalar(3).add(camera.position); }   // RYNH dive: fly the orbs behind the camera (out of frame) instead of fading them
+      else { orbTarget.set(ndc.x,ndc.y,0.5).unproject(camera);
+        orbTarget.sub(camera.position).normalize().multiplyScalar(4.5).add(camera.position); }
+      orbLead.lerp(orbTarget, coreView?0.09:0.045);                    // loose, laggy follow (not on the cursor)
+      orbFade=lerp(orbFade, (mode==='DETAIL'&&!coreView)?0:1, 0.06); orbSpread*=0.97;   // keep orbs lit during the RYNH view (hidden by position, not fade)
       for(const o of orbs){ const a=t*o.spd+o.ph, rad=o.rad*(1+orbSpread*1.6);  // dance; bloom expands the radius
         const tx=orbLead.x+Math.cos(a)*rad+Math.cos(t*0.5+o.ph)*0.2;
         const ty=orbLead.y+Math.sin(a*1.1)*rad*0.8+Math.sin(t*0.45+o.ph)*0.2;
@@ -707,8 +709,8 @@
     // empty the void as we dive so the background cuts off at the cube edges, not bleeding around it
     function setSceneDim(d){
       dust.material.opacity=0.5*(1-d);
-      const keep=dive&&dive.cube;
-      clickable.forEach(c=>{ if(c!==keep) c.material.opacity=1-d; });
+      const keep=dive&&dive.cube, core=dive&&dive.core;
+      clickable.forEach(c=>{ if(c!==keep) c.material.opacity=core?1:1-d; });   // diving into RYNH keeps the other cubes visible
     }
     function diveInto(cube){
       if(mode!=='CLUSTER')return; mode='DIVING'; lastCube=cube; sfx.resume(); sfx.whoosh(-1); burstOrbs();
