@@ -464,10 +464,7 @@
         normalMap:frost, transparent:true, opacity:0, depthWrite:false });
       wallMat.normalScale.set(0.55,0.55);
       const walls=new THREE.Mesh(wallGeo,wallMat); walls.visible=false; parent.add(walls);
-      const glow=new THREE.Mesh(new THREE.IcosahedronGeometry(isCore?0.5:0.42,1),
-        new THREE.MeshStandardMaterial({color:acc,emissive:acc,emissiveIntensity:2.6,roughness:0.4,metalness:0,transparent:true,opacity:0}));
-      glow.visible=false; parent.add(glow);
-      return {walls,glow};
+      return {walls};   // chamber glow orb removed; the cube's shard is the single gem
     }
 
     const clickable=[];
@@ -676,7 +673,7 @@
     }
     // walls show ONLY while the camera is actually inside the shell -> never bleed outside, on enter OR exit
     function setInterior(cube,w){ const u=cube.userData; if(!u.interior)return;
-      u.interior.walls.material.opacity=w; u.interior.glow.material.opacity=w*0.95;
+      u.interior.walls.material.opacity=w;
       const c=new THREE.Vector3(); cube.getWorldPosition(c); chamberLight.position.copy(c); }  // intensity is paced separately so the lights can dim as we settle in
     function camInsideness(cube){ const c=new THREE.Vector3(); cube.getWorldPosition(c);
       const dist=Math.hypot(camState.x-c.x,camState.y-c.y,camState.z-c.z);
@@ -697,7 +694,7 @@
       const fromP=V(camState.x,camState.y,camState.z),fromT=V(camState.tx,camState.ty,camState.tz);
       let toP;
       if(isCore){ toP=target.clone().add(new THREE.Vector3(0,0.15,4.6)); }   // RYNH: pull to a centered front view, no chamber
-      else { cube.userData.interior.walls.visible=true; cube.userData.interior.glow.visible=true;
+      else { cube.userData.interior.walls.visible=true;
         const dir=fromP.clone().sub(target).normalize(); toP=target.clone().addScaledVector(dir,0.7); }  // stand off in the chamber, clear of the centre shard (was 0.32 = buried in it -> clipping + inside-out view)
       dive={t0:performance.now(),dur:reduce?0:2400,fromP,toP,fromT,toT:target.clone(),cube,phase:'in',core:isCore};
       if(reduce){ camState.x=toP.x;camState.y=toP.y;camState.z=toP.z;camState.tx=target.x;camState.ty=target.y;camState.tz=target.z; if(!isCore){applyDissolve(cube,1);setInterior(cube,1);} setSceneDim(1); finishIn(cube); dive=null; }
@@ -705,7 +702,6 @@
     function finishIn(cube){ mode='DETAIL';
       if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); chamberLight.intensity=CHL_REST;   // lock the resting chamber: shell gone, walls full, lights + crystal OFF (dark so the glass card reads)
         if(cube.userData.shard){ cube.userData.shard.material.emissiveIntensity=0; cube.userData.shard.material.envMapIntensity=0; }
-        cube.userData.interior.glow.material.emissiveIntensity=0; cube.userData.interior.glow.material.envMapIntensity=0;
         if(grade) grade.uniforms.uDesat.value=1; }   // hold the cube colourless + dark while inside
       detailBase={x:camState.x,y:camState.y,z:camState.z,tx:camState.tx,ty:camState.ty,tz:camState.tz}; openPanel(cube.userData.project); }
     function exitDive(){
@@ -716,7 +712,7 @@
       if(reduce){ if(!dive.core){applyDissolve(lastCube,0);setInterior(lastCube,0);} setSceneDim(0); finishOut(); dive=null; }
     }
     function finishOut(){ mode='CLUSTER'; document.body.style.overflow=''; document.body.classList.remove('detail');
-      if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false; lastCube.userData.interior.glow.visible=false; lastCube.userData.interior.glow.material.emissiveIntensity=2.6; lastCube.userData.interior.glow.material.envMapIntensity=1;
+      if(lastCube&&lastCube.userData.interior){ lastCube.userData.interior.walls.visible=false;
         if(lastCube.userData.shard){ lastCube.userData.shard.material.emissiveIntensity=1.5; lastCube.userData.shard.material.envMapIntensity=1; } } chamberLight.intensity=0;
       if(grade) grade.uniforms.uDesat.value=0; }   // restore the crystal glow + colour for cluster view
     function updateDive(){
@@ -734,8 +730,7 @@
         const crystalDimP=dive.phase==='in'?inP:1-e;                    // crystal (shard+glow) glows on the approach then fades OFF inside -> dark chamber so the glass card reads; back ON as we leave
         chamberLight.intensity=w*lerp(CHL_PEAK,CHL_REST,lightDimP);
         const u=dive.cube.userData;
-        if(u.shard){ u.shard.material.emissiveIntensity=lerp(1.5,0,crystalDimP); u.shard.material.envMapIntensity=lerp(1,0,crystalDimP); }   // also kill the HDRI reflection so the gem goes dark inside
-        const gm=u.interior.glow.material; gm.emissiveIntensity=lerp(2.6,0,crystalDimP); gm.envMapIntensity=lerp(1,0,crystalDimP); }
+        if(u.shard){ u.shard.material.emissiveIntensity=lerp(1.5,0,crystalDimP); u.shard.material.envMapIntensity=lerp(1,0,crystalDimP); } }   // also kill the HDRI reflection so the gem goes dark inside
       setSceneDim(dive.phase==='in'?clamp((e-0.1)/0.7,0,1):clamp(1-e,0,1));
       if(bloom)bloom.strength=dive.phase==='in'?lerp(0.55,0.38,e):lerp(0.38,0.55,e);
       if(grade)grade.uniforms.uDesat.value=dive.core?0:(dive.phase==='in'?e:1-e);   // cube drains to grayscale going in, colour returns on exit; RYNH dive stays colour
@@ -780,7 +775,7 @@
         camState.x=detailBase.x; camState.y=detailBase.y; camState.z=detailBase.z;   // locked, no clipping
         camState.tx=lerp(camState.tx,detailBase.tx+px*0.16,0.07); camState.ty=lerp(camState.ty,detailBase.ty-py*0.1,0.07); camState.tz=detailBase.tz;  // gentle eased look-around, stays framed on the lit centre (no swinging to face a bare wall)
         if(!reduce) D.card.style.transform=`translate3d(${px*9}px,${-py*7}px,0) rotateX(${-py*2.4}deg) rotateY(${px*3}deg)`;
-        if(lastCube&&lastCube.userData.interior&&!dive){ lastCube.userData.interior.glow.rotation.y+=0.006; lastCube.userData.interior.walls.rotation.y+=0.0015; }
+        if(lastCube&&lastCube.userData.interior&&!dive){ lastCube.userData.interior.walls.rotation.y+=0.0015; }
       }
       updateDive();
       camera.position.set(camState.x,camState.y,camState.z);
@@ -791,7 +786,6 @@
       if(mode==='CLUSTER'){ if(!reduce){
           clickable.forEach(c=>{ if(!c.userData.isCore && c!==hovered) c.position.y=c.userData.homeY+Math.sin(t*0.6+c.userData.idx*1.7)*0.07; }); }  // calm bob; hovered cube holds still so its glow doesn't shake
         updateHover(); }
-      core.userData.interior.glow.rotation.y-=0.01;
       if(!reduce){ const sway=1-ryW; core.rotation.y=(-cluster.rotation.y+Math.sin(t*0.3)*0.32)*sway; core.rotation.x=Math.sin(t*0.4)*0.08*sway;  // gentle sway, damped to face-on during the RYNH fly-past
         for(const c of clickable) if(c.userData.shard) c.userData.shard.rotation.set(t*0.3+c.userData.idx, t*0.4, 0); }
       dust.rotation.y=t*0.01;
