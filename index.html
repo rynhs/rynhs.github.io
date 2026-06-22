@@ -510,7 +510,7 @@
       core.geometry.dispose(); core.geometry=mergeGeometries(parts,false);
       // cube snow texture, calmed so it reads frosted not shimmery
       const cN=snowNormal.clone(); cN.needsUpdate=true; cN.wrapS=cN.wrapT=THREE.RepeatWrapping; cN.repeat.set(1.0,1.0);
-      const m=core.material; m.normalMap=cN; m.normalScale.set(0.18,0.18); m.roughness=0.14; m.clearcoatRoughness=0.18; m.iridescence=0.04; m.dispersion=0.3; m.needsUpdate=true; }
+      const m=core.material; m.normalMap=cN; m.normalScale.set(0.18,0.18); m.roughness=0.08; m.thickness=1.4; m.clearcoatRoughness=0.12; m.iridescence=0.06; m.dispersion=0.35; m.needsUpdate=true; }   // match the cubes' clarity (roughness/thickness); low normalScale keeps shimmer down without frosting it
 
     const R=4.3, phi=Math.PI*(3-Math.sqrt(5));
     // crystalline ice cube: rounded box with subtle "grown ice" vertex displacement
