@@ -460,10 +460,10 @@
       const wallGeo=isCore?new THREE.IcosahedronGeometry(1.7,1):new THREE.SphereGeometry(1.3,40,28);   // smooth enclosure -> directional light gradates softly instead of hard box-facet edges (no black "clip")
       const wallMat=new THREE.MeshStandardMaterial({
         color:acc.clone().multiplyScalar(0.18),
-        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.08,  // faint self-glow floor so the dark side bottoms out at dark-grey, not pure black
+        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.4,  // self-glow floor: dark side stays grey (never the near-black wedge that read as a "clip")
         roughness:0.9, metalness:0, side:THREE.BackSide, envMapIntensity:0.05,             // kill the HDRI lift so the chamber is genuinely dark behind the glass card
         normalMap:frost, transparent:true, opacity:0, depthWrite:false });
-      wallMat.normalScale.set(0.55,0.55);
+      wallMat.normalScale.set(0.35,0.35);   // softer frost so the chamber reads smooth, not patchy
       const walls=new THREE.Mesh(wallGeo,wallMat); walls.visible=false; parent.add(walls);
       return {walls};   // chamber glow orb removed; the cube's shard is the single gem
     }
@@ -749,7 +749,7 @@
       if(grade) grade.uniforms.uDesat.value=0; }   // restore the crystal glow + colour for cluster view
     function updateDive(){
       if(!dive)return;
-      const k=dive.dur?clamp((performance.now()-dive.t0)/dive.dur,0,1):1, e=dive.phase==='in'?easeOutCubic(k):easeInOutCubic(k);
+      const k=dive.dur?clamp((performance.now()-dive.t0)/dive.dur,0,1):1, e=easeInOutCubic(k);   // gentle start both ways (easeOutCubic lurched toward the clicked cube on enter)
       tmpP.copy(dive.fromP).lerp(dive.toP,e); tmpT.copy(dive.fromT).lerp(dive.toT,e);
       camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z;
       if(!dive.core){ const cc=new THREE.Vector3(); dive.cube.getWorldPosition(cc);
