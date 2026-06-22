@@ -247,7 +247,7 @@
 
   <main id="fallback">
     <h1>Your business, <em>revolutionized</em>.</h1>
-    <p class="lead">RYNH is a software and business studio led by director Ryan Hosseini, BBA in Management Information Systems from SFU's Beedie School of Business. Here is what we build.</p>
+    <p class="lead">RYNH is a software and business studio led by director Ryan Hosseini, BBA in Management Information Systems and Operations Management from SFU's Beedie School of Business. Here is what we build.</p>
     <div class="grid" id="fallback-grid"></div>
   </main>
   <nav class="sr-only" aria-label="Services and contact">
@@ -296,7 +296,7 @@
       tags:['Consulting','Process','Strategy'] },
   ];
   const CORE = { title:"RYNH", kind:'The studio', accent:'#8fdcff', isCore:true,
-    blurb:"RYNH is a software and business studio that builds the systems modern companies run on: full-stack apps, automation, data tooling, and brand-ready web. Led by director Ryan Hosseini, who pairs a BBA in Management Information Systems from SFU’s Beedie School of Business (Dean’s Honour Roll) with hands-on work across software development, commercial and supply-chain operations, data analytics (Google-certified), and project management, including a logistics system that lifted accuracy 20% across 1,000+ monthly shipments. RYNH bridges what a business needs and what actually gets built.",
+    blurb:"RYNH is a software and business studio that builds the systems modern companies run on: full-stack apps, automation, data tooling, and brand-ready web. Led by director Ryan Hosseini, who pairs a BBA in Management Information Systems and Operations Management from SFU’s Beedie School of Business with hands-on work across software development, marketing, commercial and supply-chain operations, data analytics (Google-certified), and project management. RYNH bridges what a business needs and what actually gets built.",
     tags:['Director · Ryan Hosseini','BBA · MIS','Full-stack','Data analytics'] };
 
   // fallback grid + WebGL gate
@@ -457,10 +457,10 @@
     // hidden in cluster view, revealed on dive so the inside reads as a frozen chamber, not empty glass.
     function addInterior(parent,accent,isCore){
       const acc=new THREE.Color(accent);
-      const wallGeo=isCore?new THREE.IcosahedronGeometry(1.7,1):new THREE.BoxGeometry(1.8,1.8,1.8);
+      const wallGeo=isCore?new THREE.IcosahedronGeometry(1.7,1):new THREE.SphereGeometry(1.3,40,28);   // smooth enclosure -> directional light gradates softly instead of hard box-facet edges (no black "clip")
       const wallMat=new THREE.MeshStandardMaterial({
         color:acc.clone().multiplyScalar(0.18),
-        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.04,  // barely-there self-glow
+        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.08,  // faint self-glow floor so the dark side bottoms out at dark-grey, not pure black
         roughness:0.9, metalness:0, side:THREE.BackSide, envMapIntensity:0.05,             // kill the HDRI lift so the chamber is genuinely dark behind the glass card
         normalMap:frost, transparent:true, opacity:0, depthWrite:false });
       wallMat.normalScale.set(0.55,0.55);
@@ -661,6 +661,8 @@
     let targetP=0,smooth=0;
     function onScroll(){ const d=document.documentElement.scrollHeight-innerHeight; targetP=d>0?clamp(scrollY/d,0,1):0; }
     addEventListener('scroll',onScroll,{passive:true}); onScroll();
+    // start the ambience on the FIRST interaction of any kind (browsers block audio on bare load); no click required
+    ['pointerdown','pointermove','wheel','keydown','touchstart','scroll'].forEach(ev=>addEventListener(ev,()=>sfx.resume(),{passive:true,once:true}));
 
     const beats={hero:document.getElementById('beat-hero'),b1:document.getElementById('beat-1'),b2:document.getElementById('beat-2'),contact:document.getElementById('beat-contact')};
     const contactCta=beats.contact.querySelector('.cta');
@@ -694,7 +696,7 @@
     }
 
     // ---------- dive: feels like looking INTO the cube, camera stays alive ----------
-    let mode='CLUSTER',dive=null,lastCube=null,detailBase=null;
+    let mode='CLUSTER',dive=null,lastCube=null,detailBase=null,pAmt=0;   // pAmt = detail cursor-parallax ramp (eases in so entering a cube doesn't snap the view toward the cursor)
     function applyDissolve(cube,d){ const u=cube.userData;
       cube.material.transmission=lerp(u.baseTransmission,0.0,d);
       cube.material.opacity=lerp(1,0,d);   // fully fade the shell so there's no white cube once inside
@@ -728,7 +730,7 @@
       dive={t0:performance.now(),dur:reduce?0:2400,fromP,toP,fromT,toT:target.clone(),cube,phase:'in',core:isCore};
       if(reduce){ camState.x=toP.x;camState.y=toP.y;camState.z=toP.z;camState.tx=target.x;camState.ty=target.y;camState.tz=target.z; if(!isCore){applyDissolve(cube,1);setInterior(cube,1);} setSceneDim(1); finishIn(cube); dive=null; }
     }
-    function finishIn(cube){ mode='DETAIL';
+    function finishIn(cube){ mode='DETAIL'; pAmt=0;   // reset parallax ramp -> view holds on the cube centre, then eases into cursor look-around
       if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); chamberLight.intensity=CHL_REST;   // lock the resting chamber: shell gone, walls full, lights + crystal OFF (dark so the glass card reads)
         if(cube.userData.shard){ cube.userData.shard.material.emissiveIntensity=0; cube.userData.shard.material.envMapIntensity=0; }
         if(grade) grade.uniforms.uDesat.value=1; }   // hold the cube colourless + dark while inside
@@ -803,8 +805,9 @@
         const px=reduce?0:ndc.x, py=reduce?0:ndc.y;
         // position LOCKED (no wall clipping); only a small look-around by panning the gaze toward the edges
         camState.x=detailBase.x; camState.y=detailBase.y; camState.z=detailBase.z;   // locked, no clipping
-        camState.tx=lerp(camState.tx,detailBase.tx+px*0.16,0.07); camState.ty=lerp(camState.ty,detailBase.ty-py*0.1,0.07); camState.tz=detailBase.tz;  // gentle eased look-around, stays framed on the lit centre (no swinging to face a bare wall)
-        if(!reduce) D.card.style.transform=`translate3d(${px*9}px,${-py*7}px,0) rotateX(${-py*2.4}deg) rotateY(${px*3}deg)`;
+        pAmt=lerp(pAmt,1,0.03);   // ramp the parallax in so the look doesn't jerk toward the cursor on enter
+        camState.tx=lerp(camState.tx,detailBase.tx+px*0.16*pAmt,0.07); camState.ty=lerp(camState.ty,detailBase.ty-py*0.1*pAmt,0.07); camState.tz=detailBase.tz;  // gentle eased look-around, stays framed on the lit centre (no swinging to face a bare wall)
+        if(!reduce) D.card.style.transform=`translate3d(${px*9*pAmt}px,${-py*7*pAmt}px,0) rotateX(${-py*2.4*pAmt}deg) rotateY(${px*3*pAmt}deg)`;
         if(lastCube&&lastCube.userData.interior&&!dive){ lastCube.userData.interior.walls.rotation.y+=0.0015; }
       }
       updateDive();
