@@ -773,7 +773,10 @@
       clickable.forEach(c=>{ if(c!==keep) c.material.opacity=core?1:1-d; });   // diving into RYNH keeps the other cubes visible
     }
     function diveInto(cube){
-      if(mode!=='CLUSTER')return; mode='DIVING'; lastCube=cube; sfx.resume(); sfx.whoosh(-1); burstOrbs();
+      if(mode!=='CLUSTER')return;
+      smooth=targetP; clusterCam(smooth);   // settle the cluster cam to REST before snapshotting fromP/fromT -> the dive's gentle (zero-start-velocity) easing now matches, killing the enter "jerk" (the cluster lerp never settles on its own, so the cam was always drifting at click time)
+      camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z;
+      mode='DIVING'; lastCube=cube; sfx.resume(); sfx.whoosh(-1); burstOrbs();
       document.body.style.overflow='hidden'; document.body.classList.add('detail'); label.classList.remove('show'); hovered=null; document.body.style.cursor='';
       beats.hero.style.opacity=beats.b1.style.opacity=beats.b2.style.opacity=beats.contact.style.opacity='0'; hint.style.opacity='0';
       const isCore=cube.userData.isCore;
