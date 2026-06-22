@@ -516,9 +516,9 @@
       const wallGeo=isCore?new THREE.IcosahedronGeometry(1.7,1):new THREE.SphereGeometry(1.3,40,28);   // smooth enclosure -> directional light gradates softly instead of hard box-facet edges (no black "clip")
       const wallMat=new THREE.MeshStandardMaterial({
         color:acc.clone().multiplyScalar(0.18),
-        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.3), emissiveIntensity:0.4,  // self-glow floor: dark side stays grey (never the near-black wedge that read as a "clip")
+        emissive:acc.clone().lerp(new THREE.Color(0xffffff),0.45), emissiveIntensity:0.7,  // emissive is direction-independent, so this lifts EVERY wall angle + EVERY accent above the ACES toe -> no shadow-side black wedge (0.4 still crushed to near-black for darker accents like #5fe0c8); stays far dimmer than the reveal light so the card still reads
         roughness:0.9, metalness:0, side:THREE.BackSide, envMapIntensity:0.05,             // kill the HDRI lift so the chamber is genuinely dark behind the glass card
-        normalMap:frost, transparent:true, opacity:0, depthWrite:false });
+        normalMap:frost, transparent:true, opacity:0, depthWrite:false });   // transparent for the proximity fade-in during the dive; toggled OPAQUE at rest (finishIn) so the enclosure fully covers the FOV (transparent BackSide left black in the frame corners)
       wallMat.normalScale.set(0.35,0.35);   // softer frost so the chamber reads smooth, not patchy
       const walls=new THREE.Mesh(wallGeo,wallMat); walls.visible=false; parent.add(walls);
       return {walls};   // chamber glow orb removed; the cube's shard is the single gem
@@ -774,8 +774,7 @@
     }
     function diveInto(cube){
       if(mode!=='CLUSTER')return;
-      smooth=targetP; clusterCam(smooth);   // settle the cluster cam to REST before snapshotting fromP/fromT -> the dive's gentle (zero-start-velocity) easing now matches, killing the enter "jerk" (the cluster lerp never settles on its own, so the cam was always drifting at click time)
-      camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z;
+      // NO snap. fromP/fromT below are captured from camState = the exact pose tick() rendered from clusterCam(smooth). Snapping smooth->targetP teleported the cam forward along the spline (the 0.06 lerp never reaches targetP) -> THAT was the enter jerk. Diving straight from the live pose is C0-continuous (easeInOutCubic starts at zero velocity), and leaving smooth alone keeps exitDive returning to the right scroll spot.
       mode='DIVING'; lastCube=cube; sfx.resume(); sfx.whoosh(-1); burstOrbs();
       document.body.style.overflow='hidden'; document.body.classList.add('detail'); label.classList.remove('show'); hovered=null; document.body.style.cursor='';
       beats.hero.style.opacity=beats.b1.style.opacity=beats.b2.style.opacity=beats.contact.style.opacity='0'; hint.style.opacity='0';
@@ -791,11 +790,13 @@
     }
     function finishIn(cube){ mode='DETAIL'; pAmt=0;   // reset parallax ramp -> view holds on the cube centre, then eases into cursor look-around
       if(!cube.userData.isCore){ applyDissolve(cube,1); setInterior(cube,1); chamberLight.intensity=CHL_REST;   // lock the resting chamber: shell gone, walls full, lights + crystal OFF (dark so the glass card reads)
+        { const wm=cube.userData.interior.walls.material; wm.transparent=false; wm.opacity=1; wm.depthWrite=true; wm.needsUpdate=true; }   // OPAQUE at rest -> the enclosure fully covers the FOV (no black corners); transparent only during the fade
         if(cube.userData.shard){ cube.userData.shard.material.emissiveIntensity=0; cube.userData.shard.material.envMapIntensity=0; }
         if(grade) grade.uniforms.uDesat.value=1; }   // hold the cube colourless + dark while inside
       detailBase={x:camState.x,y:camState.y,z:camState.z,tx:camState.tx,ty:camState.ty,tz:camState.tz}; openPanel(cube.userData.project); }
     function exitDive(){
       if(mode!=='DETAIL')return; mode='EXITING'; closePanel(); detailBase=null; sfx.whoosh(1);
+      if(lastCube&&!lastCube.userData.isCore&&lastCube.userData.interior){ const wm=lastCube.userData.interior.walls.material; wm.transparent=true; wm.depthWrite=false; wm.needsUpdate=true; }   // back to transparent so the walls fade OUT on exit (and fade IN on the next dive)
       document.body.classList.remove('detail');   // drop it NOW so the HUD (topbar/sound) eases back in DURING the exit (.45s), not popping at the end
       clusterCam(smooth);
       const fromP=V(camState.x,camState.y,camState.z),fromT=V(camState.tx,camState.ty,camState.tz);
