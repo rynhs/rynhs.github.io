@@ -4,6 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>RYNH · Software, automation & business strategy</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <meta name="description" content="Your business, revolutionized. Full-stack development, automation, data, and digital strategy from a developer with a business degree behind it." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -216,6 +219,8 @@
 </style>
 </head>
 <body>
+  <!-- pronunciation cue: plays when the RYNH crystal is clicked. drop rin.mp3 next to this file. -->
+  <audio id="say-rin" src="rin.mp3" preload="auto" playsinline></audio>
   <div id="loader">
     <div class="rynh-stage">
       <svg class="rynh-svg" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet"><text x="300" y="100" text-anchor="middle" dominant-baseline="central" class="rynh-stroke">RYNH</text></svg>
@@ -433,6 +438,7 @@
       return {
         resume(){ init(); if(ctx&&ctx.state==='suspended')ctx.resume(); },
         toggle(){ on=!on; if(master)master.gain.value=on?0.16:0; return on; },
+        isOn(){ return on; },
         blip(){ if(!ctx||!on)return; const o=ctx.createOscillator(),g=ctx.createGain(),n=ctx.currentTime; o.type='triangle';
           o.frequency.setValueAtTime(880,n); o.frequency.exponentialRampToValueAtTime(420,n+0.12);
           g.gain.setValueAtTime(0,n); g.gain.linearRampToValueAtTime(0.22,n+0.01); g.gain.exponentialRampToValueAtTime(0.001,n+0.18);
@@ -780,6 +786,8 @@
       document.body.style.overflow='hidden'; document.body.classList.add('detail'); label.classList.remove('show'); hovered=null; document.body.style.cursor='';
       beats.hero.style.opacity=beats.b1.style.opacity=beats.b2.style.opacity=beats.contact.style.opacity='0'; hint.style.opacity='0';
       const isCore=cube.userData.isCore;
+      if(isCore&&sfx.isOn()){ const a=document.getElementById('say-rin'); if(a){ a.currentTime=0; a.play().catch(()=>{}); } }   // "rin" pronunciation cue on RYNH click
+
       const target=new THREE.Vector3(); cube.getWorldPosition(target);
       const fromP=V(camState.x,camState.y,camState.z),fromT=V(camState.tx,camState.ty,camState.tz);
       let toP;
