@@ -830,6 +830,25 @@
     }
     buildTour();
 
+    // ---- "the D&A cube passes IN FRONT of the heading": punch a cube-shaped hole in #beat-1 that tracks the cube on screen, so the text reads as occluded by it ----
+    const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
+    let b1Rect=null, b1Masked=false; const _mc=new THREE.Vector3(),_me=new THREE.Vector3(),_mr=new THREE.Vector3();
+    const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
+    function clearB1Mask(){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } }
+    function updateOcclusion(){
+      if(!daCube||(mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(); return; }
+      daCube.getWorldPosition(_mc);
+      _me.copy(_mc).applyMatrix4(camera.matrixWorldInverse); if(_me.z>=-0.1){ clearB1Mask(); return; }   // cube behind camera -> no mask
+      if(!b1Rect)measureB1();
+      const cp=_mc.clone().project(camera), sx=(cp.x*.5+.5)*innerWidth, sy=(-cp.y*.5+.5)*innerHeight;
+      _mr.setFromMatrixColumn(camera.matrixWorld,0);                                  // camera right (world) -> screen radius from a half-width edge point
+      const ep=_me.copy(_mc).addScaledVector(_mr,0.62*daCube.scale.x).project(camera);
+      const r=Math.hypot((ep.x*.5+.5)*innerWidth-sx,(-ep.y*.5+.5)*innerHeight-sy)*1.28;   // pad to cover the rounded silhouette + glow
+      const mx=sx-b1Rect.left, my=sy-b1Rect.top, inner=r*0.74, outer=r*1.1;
+      const g=`radial-gradient(circle ${outer}px at ${mx}px ${my}px, transparent ${inner}px, #000 ${outer}px)`;   // transparent disc = text hidden -> the canvas cube shows through = cube in front
+      beats.b1.style.webkitMaskImage=g; beats.b1.style.maskImage=g; b1Masked=true;
+    }
+
     // ---- bottom chapter scrubber (centered, equal cells): About | 6 services | Contact ----
     let SEGS=[],progCur=-1,dragging=false,suppressClick=false,scrubP=0;
     (function buildProg(){
@@ -1107,6 +1126,7 @@
       renderer.setSize(innerWidth,innerHeight);
       composer&&composer.setSize(innerWidth,innerHeight); bloom&&bloom.setSize(innerWidth,innerHeight);
       buildTour();   // re-fit the orbit to the new aspect (portrait pull-back)
+      b1Rect=null;   // recompute the beat-1 box for the occlusion mask
     });
 
     const clock=new THREE.Clock(); let firstFrame=true;
@@ -1144,6 +1164,7 @@
       updateOrbs(t);
       if(grade){ grade.uniforms.t.value=t; if(!dive) grade.uniforms.uTrans.value=0; }
       if(mode==='CLUSTER'||mode==='EXITING') updateCaptions(smooth);   // fade the captions back in DURING the exit (CSS-eased) instead of popping them at the end
+      updateOcclusion();   // mask #beat-1 behind the D&A cube as it passes in front
       updateProg(dragging?scrubP:smooth);   // while scrubbing the fill tracks the cursor; otherwise the eased scroll (hidden via body.detail during a dive)
 
       composer?composer.render():renderer.render(scene,camera);
