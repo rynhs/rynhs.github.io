@@ -158,15 +158,20 @@
   body.ready #beat-hero h1 .l{animation:heroIn 1.05s cubic-bezier(.16,.84,.3,1) both}     /* rise + fade in once the scene reveals */
   body.ready #beat-hero h1 .l2{animation-delay:.14s} body.ready #beat-hero p{animation:heroIn 1s .26s cubic-bezier(.16,.84,.3,1) both}
   @keyframes heroIn{from{opacity:0;transform:translateY(.5em)}to{opacity:1;transform:none}}
-  /* the premise word cycles through what RYNH does, with a flowing icy gradient + blurred fade-swap */
-  .hero-rot{display:inline-block;padding-right:.06em;
+  /* the premise word cycles through what RYNH does; each one is struck through (task done) then the next rises in */
+  .hero-rot{position:relative;display:inline-block;padding-right:.06em;filter:drop-shadow(0 3px 34px rgba(120,195,255,.5))}
+  .hero-rot .word{display:inline-block;
     background:linear-gradient(100deg,#79cdf3 0%,#d6f1ff 40%,#8fdcff 64%,#c4ebff 100%);background-size:230% 100%;
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
-    filter:blur(0) drop-shadow(0 3px 34px rgba(120,195,255,.5));animation:heroFlow 8s linear infinite;
-    transition:opacity .42s cubic-bezier(.45,0,.15,1), transform .42s cubic-bezier(.45,0,.15,1), filter .42s ease}
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:heroFlow 8s linear infinite}
   @keyframes heroFlow{to{background-position:230% 0}}
-  .hero-rot.swap{opacity:0;transform:translateY(.28em) scale(.95);filter:blur(9px) drop-shadow(0 3px 34px rgba(120,195,255,.5))}
-  @media (prefers-reduced-motion:reduce){ body.ready #beat-hero h1 .l,body.ready #beat-hero p{animation:none} .hero-rot{animation:none} }
+  .hero-rot .strike{position:absolute;left:-.03em;right:-.03em;top:54%;height:.075em;transform:scaleX(0);transform-origin:left center;border-radius:4px;opacity:0;pointer-events:none;
+    background:linear-gradient(90deg,rgba(189,234,255,.7),#bdeaff 35%,#8fdcff);box-shadow:0 0 12px rgba(143,220,255,.9),0 0 4px rgba(232,248,255,1)}
+  .hero-rot.s1 .strike{opacity:1;transform:scaleX(1);transition:transform .42s cubic-bezier(.65,0,.12,1), opacity .12s ease}   /* strike draws left -> right */
+  .hero-rot.s2 .word{opacity:0;transform:translateY(.28em) scale(.96);transition:opacity .32s cubic-bezier(.45,0,.15,1), transform .32s cubic-bezier(.45,0,.15,1)}
+  .hero-rot.s2 .strike{opacity:0;transform:scaleX(1);transition:opacity .3s ease}
+  .hero-rot.s3 .word{animation:heroFlow 8s linear infinite, wordIn .52s cubic-bezier(.16,.84,.3,1)}
+  @keyframes wordIn{from{opacity:0;transform:translateY(.4em)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){ body.ready #beat-hero h1 .l,body.ready #beat-hero p{animation:none} .hero-rot .word{animation:none} }
   #beat-hero p{margin-top:24px;color:#eef4fc;font-size:clamp(15px,2vw,19px);max-width:46ch;text-shadow:0 1px 12px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.5)}
   .beat.mid{top:50%;transform:translateY(-50%);text-align:center}
   #beat-2{top:20vh;transform:none}
@@ -194,31 +199,31 @@
   #sound{position:fixed;left:24px;bottom:22px;z-index:8;pointer-events:auto;background:none;border:none;color:var(--muted);font:500 12px/1 "Inter",sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:color .2s,opacity .45s ease}
   #sound:hover{color:var(--ink)}
 
-  /* ---- bottom chapter progress bar (replaces the native browser scrollbar) ---- */
+  /* ---- bottom chapter scrubber (replaces the native browser scrollbar) ---- */
   html{scrollbar-width:none;-ms-overflow-style:none}              /* Firefox / old Edge */
   html::-webkit-scrollbar,body::-webkit-scrollbar{width:0;height:0;display:none}  /* Chromium/Vivaldi/Safari */
-  #prog{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:21;width:min(660px,90vw);
-    display:flex;align-items:flex-end;gap:5px;padding:17px 0 13px;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;
+  #prog{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:21;width:min(620px,88vw);
+    display:flex;align-items:flex-end;gap:4px;padding:34px 0 14px;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;
     transition:opacity .45s ease, transform .55s cubic-bezier(.2,.7,.2,1)}
   body.detail #prog{opacity:0;pointer-events:none;transform:translate(-50%,170%)}     /* hide on a cube dive, like the rest of the chrome (keep it centered) */
-  .prog-ch{display:flex;align-items:flex-end;gap:2px;flex:var(--w) 1 0;min-width:0}   /* one chapter group; flex-grow = its scroll span */
-  .prog-seg{position:relative;flex:1 1 0;height:4px;min-width:2px;padding:0;border:0;cursor:inherit;   /* fill the group equally; chapter proportions come from .prog-ch --w */
-    border-radius:3px;overflow:hidden;background:rgba(150,195,245,.15);
-    box-shadow:inset 0 0 0 .5px rgba(200,230,255,.16), inset 0 1px 0 rgba(255,255,255,.14);
-    -webkit-backdrop-filter:blur(7px) saturate(150%);backdrop-filter:blur(7px) saturate(150%);
-    transition:height .22s cubic-bezier(.2,.7,.2,1), background .22s ease}
+  .prog-seg{position:relative;flex:1 1 0;height:3px;min-width:2px;padding:0;border:0;cursor:inherit;border-radius:2px;   /* every cell equal width (flat, uniform gaps) */
+    background:rgba(173,205,240,.18);transition:height .2s cubic-bezier(.2,.7,.2,1), background .2s ease}
   .prog-seg .fil{position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);border-radius:inherit;will-change:transform;
-    background:linear-gradient(90deg, rgba(120,200,240,.82) 0%, #bdeaff 100%);
-    box-shadow:0 0 10px rgba(143,220,255,.45), 0 0 2px rgba(220,245,255,.6)}
-  .prog-ch:hover .prog-seg,.prog-ch.on .prog-seg{height:7px;background:rgba(170,212,250,.2)}   /* whole chapter lifts when current / hovered */
-  .prog-seg.cur{height:8px}
-  .prog-seg:hover{height:10px;background:rgba(195,228,255,.3)}
-  .prog-seg.cur .fil,.prog-seg:hover .fil{box-shadow:0 0 15px rgba(143,220,255,.85), 0 0 3px rgba(225,247,255,.95)}
-  /* scrubbing: the whole bar blooms open so you see every chapter you're sliding through, current one tallest */
+    background:linear-gradient(90deg, rgba(130,205,242,.9), #c7ecff);box-shadow:0 0 8px rgba(143,220,255,.5)}
+  .prog-seg.on{height:5px;background:rgba(180,215,250,.24)}   /* the whole chapter (About / the 6 services / Contact) lifts as you pass through it */
+  .prog-seg.cur{height:7px}
+  .prog-seg:hover{height:8px;background:rgba(200,230,255,.32)}
+  .prog-seg.cur .fil,.prog-seg:hover .fil{box-shadow:0 0 13px rgba(143,220,255,.85), 0 0 3px rgba(225,247,255,.95)}
+  /* per-section labels: hidden at rest, revealed while scrubbing so you can see every section you're sliding through */
+  .prog-lbl{position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%) translateY(5px);white-space:nowrap;pointer-events:none;opacity:0;
+    font:600 9.5px/1 "Space Grotesk",sans-serif;letter-spacing:.13em;text-transform:uppercase;color:rgba(205,230,255,.9);text-shadow:0 1px 8px rgba(0,0,0,.6);
+    transition:opacity .22s ease, transform .22s ease, color .22s ease}
   #prog.scrubbing{cursor:grabbing}
-  #prog.scrubbing .prog-seg{height:8px;background:rgba(170,212,250,.22)}
-  #prog.scrubbing .prog-seg.cur{height:13px;background:rgba(202,232,255,.34)}
-  #prog.scrubbing .prog-seg.cur .fil{box-shadow:0 0 18px rgba(143,220,255,.95), 0 0 4px rgba(230,248,255,1)}
+  #prog.scrubbing .prog-seg{height:6px;background:rgba(180,215,250,.24)}
+  #prog.scrubbing .prog-seg.cur{height:9px;background:rgba(202,232,255,.36)}
+  #prog.scrubbing .prog-seg.cur .fil{box-shadow:0 0 16px rgba(143,220,255,.95), 0 0 4px rgba(230,248,255,1)}
+  #prog.scrubbing .prog-lbl{opacity:.42;transform:translateX(-50%) translateY(0)}
+  #prog.scrubbing .prog-seg.cur .prog-lbl{opacity:1;color:#fff;transform:translateX(-50%) translateY(-3px) scale(1.12)}
   #prog-tip{position:fixed;z-index:22;transform:translateX(-50%) translateY(5px);opacity:0;pointer-events:none;white-space:nowrap;
     font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:12.5px;letter-spacing:.02em;color:#eaf6ff;
     padding:6px 13px;border-radius:999px;background:rgba(10,16,24,.62);border:1px solid rgba(190,225,255,.22);
@@ -226,8 +231,7 @@
     -webkit-backdrop-filter:blur(11px) saturate(150%);backdrop-filter:blur(11px) saturate(150%);
     transition:opacity .16s ease, transform .16s ease}
   #prog-tip.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (prefers-reduced-transparency:reduce){ .prog-seg{background:rgba(40,54,76,.9);-webkit-backdrop-filter:none;backdrop-filter:none} #prog-tip{background:#0e1722} }
-  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){ .prog-seg{background:rgba(40,54,76,.85)} }
+  @media (prefers-reduced-transparency:reduce){ .prog-seg{background:rgba(40,54,76,.9)} #prog-tip{background:#0e1722} }
 
   /* "inside the cube" reveal: a frosted pane floating in the chamber, not a page */
   #detail{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;perspective:1100px}
@@ -380,7 +384,7 @@
   <div id="scroll-rig"></div>
 
   <div class="beat" id="beat-hero"><div class="inner">
-    <h1><span class="l l1">Your business,</span><span class="l l2"><span class="hero-rot" id="heroRot">revolutionized</span></span></h1>
+    <h1><span class="l l1">Your business,</span><span class="l l2"><span class="hero-rot" id="heroRot"><span class="word">revolutionized</span><span class="strike" aria-hidden="true"></span></span></span></h1>
     <p>RYNH builds the software, automation, and web that make a company run faster and waste less. Built by people who read the business, not just the spec. Scroll to explore, or click any cube to look inside.</p>
   </div></div>
   <div class="beat mid" id="beat-1"><div class="inner"><h2>Six problems we make disappear.</h2><p>Each cube is one we solve end to end. Click to look inside.</p></div></div>
@@ -824,31 +828,29 @@
     }
     buildTour();
 
-    // ---- bottom chapter progress bar (centered): About Us | Six Problems (6 notches) | Contact ----
-    let SEGS=[],GROUPS=[],progCur=-1,dragging=false,suppressClick=false;
+    // ---- bottom chapter scrubber (centered, equal cells): About | 6 services | Contact ----
+    let SEGS=[],progCur=-1,dragging=false,suppressClick=false,scrubP=0;
     (function buildProg(){
       const prog=document.getElementById('prog'), tip=document.getElementById('prog-tip'); if(!prog)return;
       const knots=[[0,0],[0.09,0.125],[0.34,0.25],[1,1]], np1=tourCubes.length+2;   // warp knots (p,u); np1 = (n+3)-1 = curve index span
       const invWarp=u=>{ for(let i=1;i<knots.length;i++){ if(u<=knots[i][1]){ const t=(u-knots[i-1][1])/(knots[i][1]-knots[i-1][1]); return knots[i-1][0]+t*(knots[i][0]-knots[i-1][0]); } } return 1; };
-      const chapters=[                                                              // a/b = scroll-p span (segment width ∝ span -> fill front moves at true scroll speed)
-        {segs:[{a:0,b:0.30,anchor:0.09,label:'About Us'}]},                         // hero + RYNH fly-past; click -> RYNH face-on (p≈0.09)
-        {segs:tourCubes.map((c,k)=>({a:0.30+k*0.10,b:0.30+(k+1)*0.10,anchor:invWarp((k+2)/np1),label:c.userData.project.title}))},  // one notch per cube, in scroll order
-        {segs:[{a:0.90,b:1.0,anchor:1.0,label:'Contact'}]},
+      const cells=[                                                                 // a/b = scroll-p span; cells are EQUAL width, so the fill just runs faster/slower per section. chap = which chapter it belongs to (for the group lift)
+        {a:0,b:0.30,anchor:0.09,label:'About Us',short:'About',chap:0},             // hero + RYNH fly-past; click -> RYNH face-on (p≈0.09)
+        ...tourCubes.map((c,k)=>({a:0.30+k*0.10,b:0.30+(k+1)*0.10,anchor:invWarp((k+2)/np1),label:c.userData.project.title,short:c.userData.project.kind,chap:1})),  // one cell per service, in scroll order
+        {a:0.90,b:1.0,anchor:1.0,label:'Contact',short:'Contact',chap:2},
       ];
       const dMax=()=>document.documentElement.scrollHeight-innerHeight;
       const showTip=(s,x)=>{ tip.textContent=s.label; const r=s.el.getBoundingClientRect();
         tip.style.left=clamp(x==null?r.left+r.width/2:x,46,innerWidth-46)+'px'; tip.style.bottom=(innerHeight-r.top+13)+'px'; tip.classList.add('show'); };
-      chapters.forEach(ch=>{ const g=document.createElement('div'); g.className='prog-ch';
-        g.style.setProperty('--w', ch.segs.reduce((s,x)=>s+(x.b-x.a),0)); GROUPS.push(g);
-        ch.segs.forEach(s=>{ const btn=document.createElement('button'); btn.type='button'; btn.className='prog-seg';
-          btn.style.setProperty('--w', s.b-s.a); btn.setAttribute('aria-label','Jump to '+s.label);
-          const fil=document.createElement('span'); fil.className='fil'; btn.appendChild(fil);
-          const rec={el:btn,fil,a:s.a,b:s.b,anchor:s.anchor,label:s.label,group:g};
-          btn.addEventListener('click',()=>{ if(suppressClick)return; window.scrollTo({top:s.anchor*dMax(),behavior:reduce?'auto':'smooth'}); sfx.resume(); sfx.blip(); });   // keyboard path; pointer taps are handled in onUp (suppressClick blocks the synthetic click)
-          btn.addEventListener('pointerenter',()=>{ if(dragging)return; showTip(rec); sfx.hover(); });
-          btn.addEventListener('pointerleave',()=>{ if(!dragging)tip.classList.remove('show'); });
-          g.appendChild(btn); SEGS.push(rec); });
-        prog.appendChild(g); });
+      cells.forEach(s=>{ const btn=document.createElement('button'); btn.type='button'; btn.className='prog-seg';
+        btn.setAttribute('aria-label','Jump to '+s.label);
+        const fil=document.createElement('span'); fil.className='fil'; btn.appendChild(fil);
+        const lbl=document.createElement('span'); lbl.className='prog-lbl'; lbl.textContent=s.short; btn.appendChild(lbl);   // shown while scrubbing
+        const rec={el:btn,fil,a:s.a,b:s.b,anchor:s.anchor,label:s.label,chap:s.chap};
+        btn.addEventListener('click',()=>{ if(suppressClick)return; window.scrollTo({top:s.anchor*dMax(),behavior:reduce?'auto':'smooth'}); sfx.resume(); sfx.blip(); });   // keyboard path; pointer taps are handled in onUp (suppressClick blocks the synthetic click)
+        btn.addEventListener('pointerenter',()=>{ if(dragging)return; showTip(rec); sfx.hover(); });
+        btn.addEventListener('pointerleave',()=>{ if(!dragging)tip.classList.remove('show'); });
+        prog.appendChild(btn); SEGS.push(rec); });
 
       // ---- drag-to-scrub: grab the bar and slide to scroll (for anyone who'd rather not wheel) ----
       const segAtX=cx=>{ for(const s of SEGS){ const r=s.el.getBoundingClientRect(); if(cx>=r.left-3&&cx<=r.right+3)return s; }
@@ -857,8 +859,8 @@
         if(cx<=f.left)return 0; if(cx>=l.right)return 1;
         for(const s of SEGS){ const r=s.el.getBoundingClientRect(); if(cx<r.left)return s.a; if(cx<=r.right)return s.a+(cx-r.left)/r.width*(s.b-s.a); } return 1; };
       let down=false,startX=0;
-      const onMove=e=>{ if(!down)return; if(!dragging&&Math.abs(e.clientX-startX)>3){ dragging=true; prog.classList.add('scrubbing'); }
-        if(dragging){ e.preventDefault(); window.scrollTo(0,xToP(e.clientX)*dMax()); showTip(segAtX(e.clientX),e.clientX); } };
+      const onMove=e=>{ if(!down)return; if(!dragging&&Math.abs(e.clientX-startX)>3){ dragging=true; prog.classList.add('scrubbing'); tip.classList.remove('show'); }
+        if(dragging){ e.preventDefault(); scrubP=xToP(e.clientX); window.scrollTo(0,scrubP*dMax()); } };   // scrubP drives the bar fill instantly (tick lerps the camera behind it); section labels show which one you're on
       const onUp=()=>{ if(!down)return; down=false; removeEventListener('pointermove',onMove); removeEventListener('pointerup',onUp); removeEventListener('pointercancel',onUp);
         if(dragging){ prog.classList.remove('scrubbing'); tip.classList.remove('show'); }
         else { const s=segAtX(startX); window.scrollTo({top:s.anchor*dMax(),behavior:reduce?'auto':'smooth'}); sfx.blip(); }   // tap = jump to the nearest beat
@@ -867,17 +869,21 @@
         addEventListener('pointermove',onMove,{passive:false}); addEventListener('pointerup',onUp); addEventListener('pointercancel',onUp); });
     })();
 
-    // hero headline: cycle the premise word so it states what RYNH actually does
-    (function heroRotator(){ const el=document.getElementById('heroRot'); if(!el||reduce)return;
+    // hero headline: each premise word gets struck through (task done) then the next one rises in
+    (function heroRotator(){ const rot=document.getElementById('heroRot'), word=rot&&rot.querySelector('.word'); if(!word||reduce)return;
       const words=['revolutionized','automated','accelerated','streamlined','modernized','transformed']; let i=0;
-      setInterval(()=>{ el.classList.add('swap');
-        setTimeout(()=>{ i=(i+1)%words.length; el.textContent=words[i]; el.classList.remove('swap'); }, 430); }, 2600); })();
+      setInterval(()=>{ rot.classList.add('s1');                                  // line strikes across the word, left -> right
+        setTimeout(()=>rot.classList.add('s2'), 470);                             // struck word + line slide out
+        setTimeout(()=>{ i=(i+1)%words.length; word.textContent=words[i];
+          rot.classList.remove('s1','s2'); rot.classList.add('s3');               // next word rises in (strike snaps back to hidden)
+          setTimeout(()=>rot.classList.remove('s3'), 540); }, 830);
+      }, 3400); })();
     function updateProg(p){ if(!SEGS.length)return; let cur=-1;
       for(let i=0;i<SEGS.length;i++){ const s=SEGS[i], f=clamp((p-s.a)/(s.b-s.a),0,1); s.fil.style.transform='scaleX('+f.toFixed(4)+')';
         if(p>=s.a&&p<s.b) cur=i; }
       if(cur<0) cur=p<=0?0:SEGS.length-1;
-      if(cur!==progCur){ if(progCur>=0)SEGS[progCur].el.classList.remove('cur'); SEGS[cur].el.classList.add('cur');
-        GROUPS.forEach(g=>g.classList.toggle('on', g===SEGS[cur].group)); progCur=cur; }
+      if(cur!==progCur){ progCur=cur; const chap=SEGS[cur].chap;
+        SEGS.forEach((s,i)=>{ s.el.classList.toggle('cur', i===cur); s.el.classList.toggle('on', s.chap===chap); }); }   // highlight the current cell + lift its whole chapter
     }
 
     function warp(p){ const A=[[0,0],[0.09,0.125],[0.34,0.25],[1,1]];     // SLOW the RYNH->first-cube band: scroll 0.09-0.34 spans curve 0.125-0.25 (time to read + click before D&A)
@@ -1117,7 +1123,7 @@
       updateOrbs(t);
       if(grade){ grade.uniforms.t.value=t; if(!dive) grade.uniforms.uTrans.value=0; }
       if(mode==='CLUSTER'||mode==='EXITING') updateCaptions(smooth);   // fade the captions back in DURING the exit (CSS-eased) instead of popping them at the end
-      updateProg(smooth);   // chapter bar tracks the eased scroll (hidden via body.detail during a dive)
+      updateProg(dragging?scrubP:smooth);   // while scrubbing the fill tracks the cursor; otherwise the eased scroll (hidden via body.detail during a dive)
 
       composer?composer.render():renderer.render(scene,camera);
       if(firstFrame){ firstFrame=false; setTimeout(hideLoader,4000); }
