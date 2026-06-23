@@ -166,10 +166,10 @@
   @keyframes heroFlow{to{background-position:230% 0}}
   .hero-rot .strike{position:absolute;left:-.03em;right:-.03em;top:54%;height:.075em;transform:scaleX(0);transform-origin:left center;border-radius:4px;opacity:0;pointer-events:none;
     background:linear-gradient(90deg,rgba(189,234,255,.7),#bdeaff 35%,#8fdcff);box-shadow:0 0 12px rgba(143,220,255,.9),0 0 4px rgba(232,248,255,1)}
-  .hero-rot.s1 .strike{opacity:1;transform:scaleX(1);transition:transform .42s cubic-bezier(.65,0,.12,1), opacity .12s ease}   /* strike draws left -> right */
-  .hero-rot.s2 .word{opacity:0;transform:translateY(.28em) scale(.96);transition:opacity .32s cubic-bezier(.45,0,.15,1), transform .32s cubic-bezier(.45,0,.15,1)}
-  .hero-rot.s2 .strike{opacity:0;transform:scaleX(1);transition:opacity .3s ease}
-  .hero-rot.s3 .word{animation:heroFlow 8s linear infinite, wordIn .52s cubic-bezier(.16,.84,.3,1)}
+  .hero-rot.s1 .strike{opacity:1;transform:scaleX(1);transition:transform .36s cubic-bezier(.65,0,.12,1), opacity .1s ease}   /* strike draws left -> right */
+  .hero-rot.s2 .word{opacity:0;transform:translateY(.3em);transition:opacity .27s cubic-bezier(.45,0,.15,1), transform .27s cubic-bezier(.45,0,.15,1)}
+  .hero-rot.s2 .strike{opacity:0;transform:translateY(.3em) scaleX(1);transition:opacity .27s cubic-bezier(.45,0,.15,1), transform .27s cubic-bezier(.45,0,.15,1)}   /* exits WITH the word (same slide+fade), not fading in place */
+  .hero-rot.s3 .word{animation:heroFlow 8s linear infinite, wordIn .44s cubic-bezier(.16,.84,.3,1)}
   @keyframes wordIn{from{opacity:0;transform:translateY(.4em)}to{opacity:1;transform:none}}
   @media (prefers-reduced-motion:reduce){ body.ready #beat-hero h1 .l,body.ready #beat-hero p{animation:none} .hero-rot .word{animation:none} }
   #beat-hero p{margin-top:24px;color:#eef4fc;font-size:clamp(15px,2vw,19px);max-width:46ch;text-shadow:0 1px 12px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.5)}
@@ -873,11 +873,11 @@
     (function heroRotator(){ const rot=document.getElementById('heroRot'), word=rot&&rot.querySelector('.word'); if(!word||reduce)return;
       const words=['revolutionized','automated','accelerated','streamlined','modernized','transformed']; let i=0;
       setInterval(()=>{ rot.classList.add('s1');                                  // line strikes across the word, left -> right
-        setTimeout(()=>rot.classList.add('s2'), 470);                             // struck word + line slide out
+        setTimeout(()=>rot.classList.add('s2'), 400);                             // struck word + line slide out together
         setTimeout(()=>{ i=(i+1)%words.length; word.textContent=words[i];
           rot.classList.remove('s1','s2'); rot.classList.add('s3');               // next word rises in (strike snaps back to hidden)
-          setTimeout(()=>rot.classList.remove('s3'), 540); }, 830);
-      }, 3400); })();
+          setTimeout(()=>rot.classList.remove('s3'), 460); }, 705);
+      }, 2890); })();
     function updateProg(p){ if(!SEGS.length)return; let cur=-1;
       for(let i=0;i<SEGS.length;i++){ const s=SEGS[i], f=clamp((p-s.a)/(s.b-s.a),0,1); s.fil.style.transform='scaleX('+f.toFixed(4)+')';
         if(p>=s.a&&p<s.b) cur=i; }
