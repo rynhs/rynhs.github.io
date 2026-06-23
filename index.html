@@ -176,13 +176,13 @@
   .beat.mid{top:50%;transform:translateY(-50%);text-align:center}
   #beat-2{top:20vh;transform:none}
   .beat.mid h2{font-family:"Space Grotesk";font-weight:600;font-size:clamp(26px,4.5vw,46px);margin:0;letter-spacing:-.01em;
-    background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(190,222,255,.6));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
-    filter:drop-shadow(0 2px 26px rgba(120,180,255,.28)) drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+    background:linear-gradient(100deg,#79cdf3 0%,#d6f1ff 40%,#8fdcff 64%,#c4ebff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+    filter:drop-shadow(0 2px 26px rgba(120,195,255,.4)) drop-shadow(0 1px 2px rgba(0,0,0,.5))}
   .beat.mid p{color:#eef4fc;margin-top:12px;font-size:16px;text-shadow:0 1px 12px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.5)}
   #beat-contact{top:0;bottom:0;transform:none;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;padding:32vh 28px}
   #beat-contact h2{font-family:"Space Grotesk";font-weight:700;font-size:clamp(30px,6vw,60px);margin:0;
-    background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(190,222,255,.6));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
-    filter:drop-shadow(0 2px 30px rgba(120,180,255,.3)) drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+    background:linear-gradient(100deg,#79cdf3 0%,#d6f1ff 40%,#8fdcff 64%,#c4ebff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+    filter:drop-shadow(0 2px 30px rgba(120,195,255,.42)) drop-shadow(0 1px 2px rgba(0,0,0,.5))}
   /* glass pill */
   .gpill,#beat-contact .cta{pointer-events:auto;display:inline-flex;gap:8px;align-items:center;padding:13px 24px;border-radius:999px;font-weight:600;font-size:14px;text-decoration:none;cursor:pointer;
     color:#eaf6ff;border:1px solid rgba(190,225,255,.4);
@@ -803,6 +803,8 @@
 
     const V=(x,y,z)=>new THREE.Vector3(x,y,z);
     const camState={x:0,y:1.5,z:16,tx:0,ty:0,tz:0};
+    const camPrev={x:0,y:1.5,z:16,tx:0,ty:0,tz:0};                 // last frame's cluster pose -> per-frame glide velocity for a C1-continuous dive entry
+    const clusterVel={vP:new THREE.Vector3(),vT:new THREE.Vector3()};
     const tmpP=new THREE.Vector3(),tmpT=new THREE.Vector3();
     // seamless tour: one smooth spline that FLOWS THROUGH every cube (no dwell/plateau -> never feels like a checkpoint),
     // pulled back + side-offset so RYNH (centre) stays in shot alongside each cube the whole way.
@@ -997,7 +999,17 @@
       if(isCore){ toP=target.clone().add(new THREE.Vector3(0,0.15,4.6)); }   // RYNH: pull to a centered front view, no chamber
       else { cube.userData.interior.walls.visible=true;
         const dir=fromP.clone().sub(target).normalize(); toP=target.clone().addScaledVector(dir,0.7); }  // stand off in the chamber, clear of the centre shard (was 0.32 = buried in it -> clipping + inside-out view)
-      dive={t0:performance.now(),dur:reduce?0:2400,fromP,toP,fromT,toT:target.clone(),cube,phase:'in',core:isCore};
+      const dur=reduce?0:2400, toT=target.clone();
+      // C1-continuous entry: seed the dive with the camera's live glide velocity (cubic Hermite, end-tangent 0). Clamp the along-approach tangent to <=1*L (proven: a Hermite with m1=0 never passes the endpoint while a<=3L; 1L keeps a hard margin so it can't punch into the 0.26 shard) and cap total magnitude to 3L to bound the lateral bow.
+      const Nf=Math.max(1,(dur/1000)*60);   // frames in the dive -> per-frame delta to per-unit-k tangent
+      const makeTan=(vWorld,fromV,toV)=>{ const S=toV.clone().sub(fromV), L=S.length()||1e-6, Sh=S.clone().multiplyScalar(1/L);
+        const m0=vWorld.clone().multiplyScalar(Nf); let a=m0.dot(Sh);
+        if(a<0){ m0.addScaledVector(Sh,-a); a=0; }                         // drop backward component (no reverse dip)
+        if(a>L){ m0.addScaledVector(Sh,L-a); }                             // clamp along-approach reach to 1*L (no overshoot past toP)
+        if(m0.length()>3*L) m0.multiplyScalar(3*L/m0.length());            // cap total -> bounds the perpendicular bow toward the walls
+        return m0; };
+      const m0P=makeTan(clusterVel.vP,fromP,toP), m0T=makeTan(clusterVel.vT,fromT,toT);
+      dive={t0:performance.now(),dur,fromP,toP,fromT,toT,cube,phase:'in',core:isCore,m0P,m0T};
       if(reduce){ camState.x=toP.x;camState.y=toP.y;camState.z=toP.z;camState.tx=target.x;camState.ty=target.y;camState.tz=target.z; if(!isCore){applyDissolve(cube,1);setInterior(cube,1);} setSceneDim(1); finishIn(cube); dive=null; }
     }
     function finishIn(cube){ mode='DETAIL'; pAmt=0;   // reset parallax ramp -> view holds on the cube centre, then eases into cursor look-around
@@ -1021,8 +1033,12 @@
       if(grade) grade.uniforms.uDesat.value=0; }   // restore the crystal glow + colour for cluster view
     function updateDive(){
       if(!dive)return;
-      const k=dive.dur?clamp((performance.now()-dive.t0)/dive.dur,0,1):1, e=easeInOutCubic(k);   // gentle start both ways (easeOutCubic lurched toward the clicked cube on enter)
-      tmpP.copy(dive.fromP).lerp(dive.toP,e); tmpT.copy(dive.fromT).lerp(dive.toT,e);
+      const k=dive.dur?clamp((performance.now()-dive.t0)/dive.dur,0,1):1, e=easeInOutCubic(k);   // e still drives EVERY secondary effect below (walls/shell/lights/bloom/desat) so their timing is unchanged
+      if(dive.phase==='in'&&dive.m0P){                                       // ENTER: cubic Hermite seeded with the live glide velocity (h00 p0 + h10 m0 + h01 p1, end-tangent m1=0) -> velocity-continuous, no jerk-from-rest. Exit keeps the plain ease (it starts from a stationary detail pose).
+        const h00=2*k*k*k-3*k*k+1, h10=k*k*k-2*k*k+k, h01=-2*k*k*k+3*k*k;
+        tmpP.copy(dive.fromP).multiplyScalar(h00).addScaledVector(dive.m0P,h10).addScaledVector(dive.toP,h01);
+        tmpT.copy(dive.fromT).multiplyScalar(h00).addScaledVector(dive.m0T,h10).addScaledVector(dive.toT,h01);
+      } else { tmpP.copy(dive.fromP).lerp(dive.toP,e); tmpT.copy(dive.fromT).lerp(dive.toT,e); }
       camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z;
       if(!dive.core){ const cc=new THREE.Vector3(); dive.cube.getWorldPosition(cc);
         const dist=Math.hypot(camState.x-cc.x,camState.y-cc.y,camState.z-cc.z);
@@ -1098,7 +1114,10 @@
       requestAnimationFrame(tick);
       const t=clock.getElapsedTime();
       if(mode==='CLUSTER'){ smooth=reduce?targetP:lerp(smooth,targetP,0.06); clusterCam(smooth);
-        camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z; }
+        camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z;
+        clusterVel.vP.set(camState.x-camPrev.x,camState.y-camPrev.y,camState.z-camPrev.z);   // per-frame glide delta (pos + gaze) -> seeds the dive's starting velocity so entering a cube is C1-continuous (no jerk-from-rest)
+        clusterVel.vT.set(camState.tx-camPrev.tx,camState.ty-camPrev.ty,camState.tz-camPrev.tz);
+        camPrev.x=camState.x;camPrev.y=camState.y;camPrev.z=camState.z;camPrev.tx=camState.tx;camPrev.ty=camState.ty;camPrev.tz=camState.tz; }
       else if(mode==='DETAIL'&&detailBase){
         const px=reduce?0:ndc.x, py=reduce?0:ndc.y;
         // position LOCKED (no wall clipping); only a small look-around by panning the gaze toward the edges
