@@ -914,8 +914,8 @@
       camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z;
       if(!dive.core){ const cc=new THREE.Vector3(); dive.cube.getWorldPosition(cc);
         const dist=Math.hypot(camState.x-cc.x,camState.y-cc.y,camState.z-cc.z);
-        const w=clamp(1-(dist-0.9)/(1.4-0.9),0,1);
-        setInterior(dive.cube, w);                                      // walls fade in by proximity
+        const w=clamp((1.4-dist)/0.1,0,1);                              // walls reach FULL opacity at the wall-sphere boundary (1.3) -> no see-through window between fading shell and faded walls = no void
+        setInterior(dive.cube, w);
         applyDissolve(dive.cube, clamp((1.5-dist)/0.6,0,1));            // shell gone before the standoff
         const inP=easeInOutCubic(clamp((k-0.4)/0.6,0,1));
         const lightDimP=dive.phase==='in'?inP:1;                        // point light eases off going in, stays off
