@@ -707,6 +707,7 @@
           +'c*=vec3(0.98,0.99,1.03); c*=smoothstep(0.95,0.35,dist);'
           +'c+=(rnd(v+t)-0.5)*(0.022+uTrans*0.05);'
           +'c=mix(c, vec3(dot(c,vec3(0.2126,0.7152,0.0722))), clamp(uDesat,0.0,1.0));'      // drain colour when diving into a cube
+          +'float fr=smoothstep(0.0,1.0,uTrans); c=mix(c, vec3(0.80,0.88,0.98)+(rnd(uv*90.0+t)-0.5)*0.07, fr*0.92);'   // frost-over (applied AFTER the vignette so it covers the corners): at peak the screen frosts to icy white with grain, hiding the open-space void during the fly in/out; 0 at rest
           +'gl_FragColor=vec4(c,1.0); }'
       });
       composer.addPass(grade);
@@ -826,6 +827,7 @@
       setSceneDim(dive.phase==='in'?clamp((e-0.1)/0.7,0,1):clamp(1-e,0,1));
       if(bloom)bloom.strength=dive.phase==='in'?lerp(0.55,0.38,e):lerp(0.38,0.55,e);
       if(grade)grade.uniforms.uDesat.value=dive.core?0:(dive.phase==='in'?e:1-e);   // cube drains to grayscale going in, colour returns on exit; RYNH dive stays colour
+      if(grade)grade.uniforms.uTrans.value=dive.core?0:Math.min(clamp(e/0.22,0,1),clamp((1-e)/0.18,0,1));   // frost-over the fly in/out (trapezoid: up fast, hold, drop as the chamber fills) so the open-space VOID is never seen; clears to 0 at rest. core dive keeps the cubes visible so no void to mask
       if(k>=1){ if(dive.phase==='in'){ const c=dive.cube; dive=null; finishIn(c); } else { dive=null; finishOut(); } }
     }
 
