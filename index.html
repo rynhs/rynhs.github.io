@@ -926,7 +926,7 @@
       setSceneDim(dive.phase==='in'?clamp((e-0.1)/0.7,0,1):clamp(1-e,0,1));
       if(bloom)bloom.strength=dive.phase==='in'?lerp(0.55,0.38,e):lerp(0.38,0.55,e);
       if(grade)grade.uniforms.uDesat.value=dive.core?0:(dive.phase==='in'?e:1-e);   // cube drains to grayscale going in, colour returns on exit; RYNH dive stays colour
-      if(grade)grade.uniforms.uTrans.value=dive.core?0:Math.min(clamp(e/0.22,0,1),clamp((1-e)/0.18,0,1));   // frost-over the fly in/out (trapezoid: up fast, hold, drop as the chamber fills) so the open-space VOID is never seen; clears to 0 at rest. core dive keeps the cubes visible so no void to mask
+      if(grade)grade.uniforms.uTrans.value=0;   // frost-over disabled (user preference: no igloo-style white flash on cube entry/exit)
       if(k>=1){ if(dive.phase==='in'){ const c=dive.cube; dive=null; finishIn(c); } else { dive=null; finishOut(); } }
     }
 
