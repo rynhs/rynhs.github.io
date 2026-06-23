@@ -851,7 +851,7 @@
     addEventListener('keydown',e=>{ if(e.key==='Escape'&&mode==='DETAIL') exitDive(); });
 
     // ---- contact: inline form posting to your own mailer, with book-a-call + email fallback ----
-    const CONTACT_ENDPOINT='';   // ← upload rynh-contact.php to HostPapa, then put its URL here, e.g. 'https://canimpex.net/rynh-contact.php'
+    const CONTACT_ENDPOINT='https://api.rynh.net/rynh-contact.php';
     const CALENDLY_URL='';       // ← paste your Calendly/Cal.com link here, e.g. 'https://calendly.com/ryanhosseini/15min'  (empty = button hidden)
     const CT={el:document.getElementById('contact'),form:document.getElementById('ct-form'),status:document.getElementById('ct-status'),source:document.getElementById('ct-source'),call:document.getElementById('ct-call'),
               get send(){return this.form.querySelector('.ct-send');}, field(n){return this.form.querySelector('[name="'+n+'"]');}};
