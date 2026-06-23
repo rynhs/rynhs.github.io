@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Ryan Hosseini — RYNH | Software, Automation & Business Strategy</title>
-<meta name="description" content="Ryan Hosseini (RYNH) is an independent operator building custom software, automation, and data systems for small businesses. SFU Beedie business + full-stack engineering, based in Vancouver." />
+<title>RYNH — Software, Automation & Strategy</title>
+<meta name="description" content="RYNH builds custom software, automation, data systems, and digital strategy for small businesses. Engineering and business expertise from founder Ryan Hosseini. Based in Vancouver, serving worldwide." />
 <meta name="author" content="Ryan Hosseini" />
 <meta name="keywords" content="Ryan Hosseini, RYNH, Ryan Hosseini Vancouver, RYNH Vancouver, software developer Vancouver, business automation, custom software, full stack developer, SFU Beedie" />
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
@@ -16,16 +16,16 @@
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="RYNH" />
-<meta property="og:title" content="Ryan Hosseini — RYNH" />
-<meta property="og:description" content="Independent operator building custom software, automation, and data systems for small businesses. Full-stack engineering with a business strategist's instincts." />
+<meta property="og:title" content="RYNH — Software, Automation & Strategy" />
+<meta property="og:description" content="Custom software, automation, data systems, and digital strategy for small businesses. Full-stack engineering paired with business instinct." />
 <meta property="og:url" content="https://rynh.net/" />
 <meta property="og:image" content="https://rynh.net/og.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:locale" content="en_CA" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Ryan Hosseini — RYNH" />
-<meta name="twitter:description" content="Custom software, automation, and data systems. Engineering + business strategy in one operator." />
+<meta name="twitter:title" content="RYNH — Software, Automation & Strategy" />
+<meta name="twitter:description" content="Custom software, automation, and data systems. Engineering paired with business strategy." />
 <meta name="twitter:image" content="https://rynh.net/og.png" />
 
 <script type="application/ld+json">
@@ -326,7 +326,7 @@
       <button class="mark" id="navmark" aria-haspopup="true"><span class="wm">RY<b>NH</b></span><span class="chev">⌄</span></button>
       <ul class="navmenu" id="navmenu"></ul>
     </div>
-    <a href="mailto:ryanhosseini12@gmail.com?subject=Let's%20talk" data-contact="Topbar">Let's talk →</a>
+    <a href="mailto:ryan@rynh.net?subject=Let's%20talk" data-contact="Topbar">Let's talk →</a>
   </div>
 
   <div id="stage" aria-hidden="true"></div>
@@ -340,7 +340,7 @@
   <div class="beat mid" id="beat-2"><div class="inner"><h2>Engineering that reads the business.</h2><p>Most shops build exactly what you spec. RYNH builds what the operation actually needs, because it understands how you run.</p></div></div>
   <div class="beat" id="beat-contact">
     <h2>What should we build first?</h2>
-    <a class="cta" href="mailto:ryanhosseini12@gmail.com?subject=Project%20inquiry" data-contact="Contact section">Let's talk →</a>
+    <a class="cta" href="mailto:ryan@rynh.net?subject=Project%20inquiry" data-contact="Contact section">Let's talk →</a>
   </div>
 
   <div id="hint">Scroll ↓</div>
@@ -380,7 +380,7 @@
       <button class="ct-x" data-ct-close aria-label="Close">×</button>
       <div class="ct-eye">Let's talk</div>
       <h3 id="ct-title">Let's build something.</h3>
-      <p class="ct-sub">Tell me what you're working on. I usually reply within a day.</p>
+      <p class="ct-sub">Tell us what you're working on. Replies usually within a day.</p>
       <form id="ct-form" novalidate>
         <input class="ct-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
         <input type="text" name="name" placeholder="Your name" required autocomplete="name">
@@ -392,7 +392,7 @@
           <a class="btn btn-ghost ct-call" id="ct-call" href="#" target="_blank" rel="noopener">Book a call</a>
         </div>
         <p class="ct-status" id="ct-status" role="status" aria-live="polite"></p>
-        <p class="ct-note">or email <a href="mailto:ryanhosseini12@gmail.com">ryanhosseini12@gmail.com</a></p>
+        <p class="ct-note">or email <a href="mailto:ryan@rynh.net">ryan@rynh.net</a></p>
       </form>
     </div>
   </div>
@@ -410,7 +410,7 @@
       <li>Web presence and branding</li>
       <li>AI integration</li>
       <li>Operations and technical strategy consulting</li>
-      <li><a href="mailto:ryanhosseini12@gmail.com">Contact Ryan Hosseini</a></li>
+      <li><a href="mailto:ryan@rynh.net">Contact Ryan Hosseini</a></li>
     </ul>
   </nav>
 
@@ -956,7 +956,7 @@
     CT.form.addEventListener('submit',async e=>{ e.preventDefault();
       if(CT.field('company').value){ closeContact(); return; }   // honeypot tripped -> silently drop
       const fd=new FormData(CT.form);
-      const mailto=()=>{ const body='From: '+(fd.get('name')||'')+' <'+(fd.get('email')||'')+'>\n\n'+(fd.get('message')||''); location.href='mailto:ryanhosseini12@gmail.com?subject='+encodeURIComponent('RYNH inquiry — '+(fd.get('source')||''))+'&body='+encodeURIComponent(body); };
+      const mailto=()=>{ const body='From: '+(fd.get('name')||'')+' <'+(fd.get('email')||'')+'>\n\n'+(fd.get('message')||''); location.href='mailto:ryan@rynh.net?subject='+encodeURIComponent('RYNH inquiry — '+(fd.get('source')||''))+'&body='+encodeURIComponent(body); };
       if(!CONTACT_ENDPOINT){ mailto(); return; }                 // backend not wired yet -> open a prefilled email
       CT.send.disabled=true; CT.status.textContent='Sending…'; CT.status.className='ct-status sending';
       try{ const r=await fetch(CONTACT_ENDPOINT,{method:'POST',body:fd}); const j=await r.json().catch(()=>({})); if(!r.ok||!j.success) throw 0;
