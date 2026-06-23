@@ -158,29 +158,20 @@
   body.ready #beat-hero h1 .l{animation:heroIn 1.05s cubic-bezier(.16,.84,.3,1) both}     /* rise + fade in once the scene reveals */
   body.ready #beat-hero h1 .l2{animation-delay:.14s} body.ready #beat-hero p{animation:heroIn 1s .26s cubic-bezier(.16,.84,.3,1) both}
   @keyframes heroIn{from{opacity:0;transform:translateY(.5em)}to{opacity:1;transform:none}}
-  /* the premise word cycles through what RYNH does; a line cracks it, then it shatters into two halves */
+  /* the premise word cycles through what RYNH does; each one is struck through (to-do done) then slides out */
   .hero-rot{position:relative;display:inline-block;padding-right:.06em;filter:drop-shadow(0 3px 34px rgba(120,195,255,.5))}
-  .hero-rot .word,.hero-rot .shard{
+  .hero-rot .word{display:inline-block;
     background:linear-gradient(100deg,#79cdf3 0%,#d6f1ff 40%,#8fdcff 64%,#c4ebff 100%);background-size:230% 100%;
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:heroFlow 8s linear infinite}
-  .hero-rot .word{display:inline-block}
   @keyframes heroFlow{to{background-position:230% 0}}
-  .hero-rot .shard{position:absolute;left:0;top:0;display:inline-block;opacity:0;pointer-events:none;will-change:transform,opacity}  /* two clones of the word, clipped into top/bottom halves */
-  .hero-rot .shard.top{clip-path:inset(-14% 0 49% 0)}
-  .hero-rot .shard.bot{clip-path:inset(49% 0 -14% 0)}
   .hero-rot .strike{position:absolute;left:-.03em;right:-.03em;top:54%;height:.085em;transform:scaleX(0);transform-origin:left center;border-radius:0;opacity:0;pointer-events:none;
     background:#cdefff;box-shadow:0 0 12px rgba(143,220,255,.85),0 0 4px rgba(232,248,255,1)}
-  .hero-rot.s1 .strike{opacity:1;transform:scaleX(1);transition:transform .36s cubic-bezier(.65,0,.12,1), opacity .1s ease}   /* the crack draws left -> right */
-  /* break: word splits along the crack into two shards that fly apart and fade (the strike fades with them) */
-  .hero-rot.brk .word{opacity:0}
-  .hero-rot.brk .strike{opacity:0;transform:scaleX(1);transition:opacity .26s ease .06s}
-  .hero-rot.brk .shard.top{animation:heroFlow 8s linear infinite, shardTop .46s cubic-bezier(.3,0,.16,1) forwards}
-  .hero-rot.brk .shard.bot{animation:heroFlow 8s linear infinite, shardBot .46s cubic-bezier(.3,0,.16,1) forwards}
-  @keyframes shardTop{0%{opacity:1;transform:none}55%{opacity:1}100%{opacity:0;transform:translate(-.05em,-.42em) rotate(-4.5deg)}}
-  @keyframes shardBot{0%{opacity:1;transform:none}55%{opacity:1}100%{opacity:0;transform:translate(.06em,.48em) rotate(3.6deg)}}
+  .hero-rot.s1 .strike{opacity:1;transform:scaleX(1);transition:transform .36s cubic-bezier(.65,0,.12,1), opacity .1s ease}   /* line strikes across, like checking off a to-do */
+  .hero-rot.s2 .word{opacity:0;transform:translateY(.3em);transition:opacity .27s cubic-bezier(.45,0,.15,1), transform .27s cubic-bezier(.45,0,.15,1)}
+  .hero-rot.s2 .strike{opacity:0;transform:translateY(.3em) scaleX(1);transition:opacity .27s cubic-bezier(.45,0,.15,1), transform .27s cubic-bezier(.45,0,.15,1)}   /* struck word + line slide out together */
   .hero-rot.s3 .word{animation:heroFlow 8s linear infinite, wordIn .44s cubic-bezier(.16,.84,.3,1)}
   @keyframes wordIn{from{opacity:0;transform:translateY(.4em)}to{opacity:1;transform:none}}
-  @media (prefers-reduced-motion:reduce){ body.ready #beat-hero h1 .l,body.ready #beat-hero p{animation:none} .hero-rot .word,.hero-rot .shard{animation:none} }
+  @media (prefers-reduced-motion:reduce){ body.ready #beat-hero h1 .l,body.ready #beat-hero p{animation:none} .hero-rot .word{animation:none} }
   #beat-hero p{margin-top:24px;color:#eef4fc;font-size:clamp(15px,2vw,19px);max-width:46ch;text-shadow:0 1px 12px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.5)}
   .beat.mid{top:50%;transform:translateY(-50%);text-align:center}
   #beat-2{top:20vh;transform:none}
@@ -393,7 +384,7 @@
   <div id="scroll-rig"></div>
 
   <div class="beat" id="beat-hero"><div class="inner">
-    <h1><span class="l l1">Your business,</span><span class="l l2"><span class="hero-rot" id="heroRot"><span class="word">revolutionized</span><span class="shard top" aria-hidden="true">revolutionized</span><span class="shard bot" aria-hidden="true">revolutionized</span><span class="strike" aria-hidden="true"></span></span></span></h1>
+    <h1><span class="l l1">Your business,</span><span class="l l2"><span class="hero-rot" id="heroRot"><span class="word">revolutionized</span><span class="strike" aria-hidden="true"></span></span></span></h1>
     <p>RYNH builds the software, automation, and web that make a company run faster and waste less. Built by people who read the business, not just the spec. Scroll to explore, or click any cube to look inside.</p>
   </div></div>
   <div class="beat mid" id="beat-1"><div class="inner"><h2>Six problems we make disappear.</h2><p>Each cube is one we solve end to end. Click to look inside.</p></div></div>
@@ -878,17 +869,15 @@
         addEventListener('pointermove',onMove,{passive:false}); addEventListener('pointerup',onUp); addEventListener('pointercancel',onUp); });
     })();
 
-    // hero headline: a line cracks the word, it shatters into two halves, then the next word rises in
-    (function heroRotator(){ const rot=document.getElementById('heroRot'); if(!rot||reduce)return;
-      const word=rot.querySelector('.word'), top=rot.querySelector('.shard.top'), bot=rot.querySelector('.shard.bot'); if(!word)return;
+    // hero headline: each premise word gets struck through (to-do done), slides out, next rises in
+    (function heroRotator(){ const rot=document.getElementById('heroRot'), word=rot&&rot.querySelector('.word'); if(!word||reduce)return;
       const words=['revolutionized','automated','accelerated','streamlined','modernized','transformed']; let i=0;
-      const setWord=t=>{ word.textContent=t; top.textContent=t; bot.textContent=t; };   // shards mirror the word so they shatter the right text
-      setInterval(()=>{ rot.classList.add('s1');                                  // crack draws across the word, left -> right
-        setTimeout(()=>rot.classList.add('brk'), 380);                            // word splits along the crack, halves fly apart
-        setTimeout(()=>{ i=(i+1)%words.length; setWord(words[i]);
-          rot.classList.remove('s1','brk'); rot.classList.add('s3');              // next word rises in (shards reset to hidden)
-          setTimeout(()=>rot.classList.remove('s3'), 460); }, 840);
-      }, 2900); })();
+      setInterval(()=>{ rot.classList.add('s1');                                  // line strikes across the word, left -> right
+        setTimeout(()=>rot.classList.add('s2'), 400);                             // struck word + line slide out together
+        setTimeout(()=>{ i=(i+1)%words.length; word.textContent=words[i];
+          rot.classList.remove('s1','s2'); rot.classList.add('s3');               // next word rises in
+          setTimeout(()=>rot.classList.remove('s3'), 460); }, 705);
+      }, 2890); })();
     function updateProg(p){ if(!SEGS.length)return; let cur=-1;
       for(let i=0;i<SEGS.length;i++){ const s=SEGS[i], f=clamp((p-s.a)/(s.b-s.a),0,1); s.fil.style.transform='scaleX('+f.toFixed(4)+')';
         if(p>=s.a&&p<s.b) cur=i; }
