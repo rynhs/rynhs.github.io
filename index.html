@@ -1133,8 +1133,10 @@
       camera.updateMatrixWorld();   // ensure a valid world matrix before the orbs unproject through it (else first-frame NaN)
       setFocus(camera.position.distanceTo(new THREE.Vector3(camState.tx,camState.ty,camState.tz)));
 
-      if(!reduce){ const skip=dive&&dive.cube;   // bob runs in every mode (not just cluster) so visible cubes don't jump to a new sine value when the dive ends
-        clickable.forEach(c=>{ if(!c.userData.isCore && c!==hovered && c!==skip) c.position.y=c.userData.homeY+Math.sin(t*0.6+c.userData.idx*1.7)*0.07; }); }  // hovered/dived cube holds still
+      if(!reduce){ const bobbing=(mode==='CLUSTER');   // bob ONLY in cluster; elsewhere ease to homeY. DAMPED follow (not a hard set) so the dived cube — whose chamber walls+shard are its children — never SNAPS its y when the fly-in stops and the card appears (that snap was the "jerk when the camera stops"). A 0.1Hz bob is slow enough the 0.12 lerp tracks it with no visible amplitude loss.
+        clickable.forEach(c=>{ if(c.userData.isCore)return;
+          const tgt=(bobbing&&c!==hovered)?c.userData.homeY+Math.sin(t*0.6+c.userData.idx*1.7)*0.07:c.userData.homeY;
+          c.position.y+=(tgt-c.position.y)*0.12; }); }   // hovered + dived/inside cube ease to rest, no lurch
       if(mode==='CLUSTER') updateHover();
       if(!reduce){ const sway=1-ryW; core.rotation.y=(-cluster.rotation.y+Math.sin(t*0.3)*0.32)*sway; core.rotation.x=0;  // upright (no tilt) so the icicles always hang straight down; gentle y-sway only
         for(const c of clickable) if(c.userData.shard) c.userData.shard.rotation.set(t*0.3+c.userData.idx, t*0.4, 0); }
