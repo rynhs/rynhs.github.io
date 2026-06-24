@@ -130,17 +130,19 @@
   .topbar .mark b{color:var(--accent)}
   .chev{font-size:14px;line-height:1;opacity:.65;transform:translateY(-1px);transition:transform .3s,opacity .2s}
   .navwrap:hover .chev{opacity:1;transform:translateY(1px) rotate(180deg)}
-  .navmenu{list-style:none;margin:6px 0 0;padding:8px;position:absolute;top:100%;left:0;min-width:236px;
-    opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .25s,transform .25s,visibility .25s;
-    border:1px solid rgba(190,225,255,.28);border-radius:16px;
-    background:linear-gradient(160deg,rgba(34,50,72,.46),rgba(11,18,30,.55));
-    backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);
-    box-shadow:0 26px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(230,245,255,.3)}
+  /* chromeless floating labels — the payoff is in the 3D scene (the cube floats forward + glows on hover), not a boxed dropdown */
+  .navmenu{list-style:none;margin:9px 0 0;padding:4px 2px;position:absolute;top:100%;left:2px;min-width:208px;
+    opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .28s,transform .28s,visibility .28s}
   .navwrap:hover .navmenu{opacity:1;visibility:visible;transform:translateY(0)}
-  .navmenu button{width:100%;text-align:left;background:none;border:none;color:#d6e3f1;font:500 13px/1 "Inter",sans-serif;
-    padding:11px 13px;border-radius:10px;cursor:pointer;letter-spacing:.02em;transition:background .15s,color .15s;display:flex;gap:10px;align-items:center}
-  .navmenu button:hover{background:rgba(143,220,255,.13);color:#fff}
-  .navmenu .dot{width:7px;height:7px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
+  .navmenu li{opacity:0;transform:translateX(-9px);transition:opacity .3s ease,transform .34s cubic-bezier(.2,.85,.25,1)}
+  .navwrap:hover .navmenu li{opacity:1;transform:translateX(0);transition-delay:calc(55ms + var(--i,0)*42ms)}
+  .navmenu button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;cursor:pointer;
+    padding:7px 8px;color:#9fb0c0;font:600 13px/1 "Space Grotesk",sans-serif;letter-spacing:.005em;
+    text-shadow:0 1px 10px rgba(0,0,0,.7),0 1px 3px rgba(0,0,0,.6);transition:color .2s,transform .2s,letter-spacing .2s}
+  .navmenu .tick{width:7px;height:7px;flex:none;border-radius:2px;background:var(--c);transform:rotate(45deg) scale(.62);opacity:.55;
+    box-shadow:0 0 0 0 var(--c);transition:transform .26s cubic-bezier(.2,.85,.25,1),opacity .26s,box-shadow .26s}
+  .navmenu button:hover{color:#fff;transform:translateX(5px);letter-spacing:.02em}
+  .navmenu button:hover .tick{transform:rotate(45deg) scale(1.12);opacity:1;box-shadow:0 0 16px 1px var(--c)}
   .topbar a{pointer-events:auto;text-decoration:none;color:#eaf6ff;font-size:13px;letter-spacing:.04em;padding:9px 16px;border-radius:999px;
     border:1px solid rgba(190,225,255,.35);background:linear-gradient(150deg,rgba(150,200,255,.18),rgba(120,170,230,.06));
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 rgba(230,245,255,.35);transition:transform .15s,border-color .2s}
@@ -732,20 +734,25 @@
       const cube=new THREE.Mesh(cubeGeo,makeIce(p.accent,false));
       cube.position.copy(pos);
       cube.rotation.set(Math.random()*0.6,Math.random()*0.6,Math.random()*0.4);
-      cube.userData={project:p,isCore:false,baseTransmission:1.0,baseThickness:1.4,homeY:pos.y,idx:i,interior:addInterior(cube,p.accent,false)};
+      cube.userData={project:p,isCore:false,baseTransmission:1.0,baseThickness:1.4,homeY:pos.y,hx:pos.x,hz:pos.z,idx:i,interior:addInterior(cube,p.accent,false)};
       // a small accent crystal frozen inside, refracted by the glass -> each cube has a glowing heart
       const shard=new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,0),new THREE.MeshStandardMaterial({color:new THREE.Color(p.accent),emissive:new THREE.Color(p.accent),emissiveIntensity:1.5,roughness:0.35,metalness:0,flatShading:true}));
       cube.add(shard); cube.userData.shard=shard;
       cluster.add(cube); clickable.push(cube);
     });
 
-    // RYNH hover menu -> jump straight into a service cube (for the scroll-averse)
+    // RYNH hover menu -> hovering a label floats that service's ACTUAL cube forward in the scene; click dives in
+    let navPick=null; const _presP=new THREE.Vector3(),_toCam=new THREE.Vector3();
     { const navmenu=document.getElementById('navmenu');
       SERVICES.forEach((s,i)=>{ const cube=clickable[i+1];
-        const li=document.createElement('li'), b=document.createElement('button');
-        b.innerHTML='<span class="dot" style="background:'+s.accent+';color:'+s.accent+'"></span>'+s.title;
-        b.addEventListener('click',()=>{ if(mode==='CLUSTER') diveInto(cube); });
-        li.appendChild(b); navmenu.appendChild(li); }); }
+        const li=document.createElement('li'); li.style.setProperty('--i',i);
+        const b=document.createElement('button'); b.style.setProperty('--c',s.accent);
+        b.innerHTML='<span class="tick"></span>'+s.title;
+        b.addEventListener('pointerenter',()=>{ if(mode==='CLUSTER') navPick=cube; });
+        b.addEventListener('pointerleave',()=>{ if(navPick===cube) navPick=null; });
+        b.addEventListener('click',()=>{ if(mode==='CLUSTER'){ cube.position.set(cube.userData.hx,cube.userData.homeY,cube.userData.hz); cube.scale.setScalar(1); navPick=null; diveInto(cube); } });
+        li.appendChild(b); navmenu.appendChild(li); });
+      document.querySelector('.navwrap').addEventListener('pointerleave',()=>{ navPick=null; }); }
     { const sb=document.getElementById('sound'),ss=document.getElementById('sound-state');
       sb.addEventListener('click',()=>{ sfx.resume(); ss.textContent=sfx.toggle()?'On':'Off'; }); }
 
@@ -975,6 +982,7 @@
     addEventListener('pointermove',e=>{ ndc.x=(e.clientX/innerWidth)*2-1; ndc.y=-(e.clientY/innerHeight)*2+1; pointerInside=true; },{passive:true});
     addEventListener('pointerleave',()=>pointerInside=false);
     function updateHover(){
+      if(navPick){ if(hovered){hovered=null;document.body.style.cursor='';} label.classList.remove('show'); return; }   // menu is presenting a cube -> the nav float/glow owns the cubes, skip raycast hover
       let hit=null;
       if(pointerInside){ raycaster.setFromCamera(ndc,camera); hit=raycaster.intersectObjects(clickable,false)[0]?.object||null; }
       if(hit!==hovered){ hovered=hit; document.body.style.cursor=hit?'pointer':''; if(hit) sfx.hover(); }
@@ -1160,9 +1168,17 @@
       setFocus(camera.position.distanceTo(new THREE.Vector3(camState.tx,camState.ty,camState.tz)));
 
       if(!reduce){ const bobbing=(mode==='CLUSTER');   // bob ONLY in cluster; elsewhere ease to homeY. DAMPED follow (not a hard set) so the dived cube — whose chamber walls+shard are its children — never SNAPS its y when the fly-in stops and the card appears (that snap was the "jerk when the camera stops"). A 0.1Hz bob is slow enough the 0.12 lerp tracks it with no visible amplitude loss.
-        clickable.forEach(c=>{ if(c.userData.isCore)return;
-          const tgt=(bobbing&&c!==hovered)?c.userData.homeY+Math.sin(t*0.6+c.userData.idx*1.7)*0.07:c.userData.homeY;
-          c.position.y+=(tgt-c.position.y)*0.12; }); }   // hovered + dived/inside cube ease to rest, no lurch
+        clickable.forEach(c=>{ if(c.userData.isCore)return; const u=c.userData;
+          if(c===navPick && mode==='CLUSTER'){            // PRESENT: menu hover floats this cube toward the lens + glows it
+            _presP.set(u.hx,u.homeY,u.hz); _toCam.copy(camera.position).sub(_presP); const dist=_toCam.length();
+            if(dist>4) _presP.addScaledVector(_toCam.normalize(), Math.min(dist*0.32,2.2));
+            c.position.lerp(_presP,0.12);
+            c.scale.setScalar(lerp(c.scale.x,1.32,0.12));
+            c.material.emissiveIntensity=lerp(c.material.emissiveIntensity,1.9,0.12);
+          } else {
+            const tgt=(bobbing&&c!==hovered)?u.homeY+Math.sin(t*0.6+u.idx*1.7)*0.07:u.homeY;
+            c.position.x+=(u.hx-c.position.x)*0.1; c.position.z+=(u.hz-c.position.z)*0.1; c.position.y+=(tgt-c.position.y)*0.12;   // return home (incl. from a float) + bob
+          } }); }
       if(mode==='CLUSTER') updateHover();
       if(!reduce){ const sway=1-ryW; core.rotation.y=(-cluster.rotation.y+Math.sin(t*0.3)*0.32)*sway; core.rotation.x=0;  // upright (no tilt) so the icicles always hang straight down; gentle y-sway only
         for(const c of clickable) if(c.userData.shard) c.userData.shard.rotation.set(t*0.3+c.userData.idx, t*0.4, 0); }
