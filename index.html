@@ -829,30 +829,29 @@
     }
     buildTour();
 
-    // ---- WIPE: heading fully readable, then the D&A cube eats it as it crosses. Cube-aligned (projected), but ONLY armed once the camera has turned to face the cube (cube in front + on screen, past RYNH) -> doesn't seed mid-text early and catches the cube on cue. Erases the union band the cube sweeps; stays gone; resets when the heading hides. ----
+    // ---- WIPE: heading fully readable; projection of the D&A cube does NOT start until AFTER the camera swing (scroll past ARM_P), so it can't seed mid-text during the approach. Then it erases the band the cube sweeps and LATCHES gone (wDone) so the orbit bringing the cube back can't make it reappear. Resets when the heading hides. ----
     const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
-    let b1Rect=null, b1Masked=false, wLo=null, wHi=null, wArmed=false;
+    const ARM_P=0.42;   // scroll point AFTER the camera swing toward the cubes -> projection arms here (tunable: higher = wipe later)
+    let b1Rect=null, b1Masked=false, wLo=null, wHi=null, wDone=false;
     const _mc=new THREE.Vector3(),_cam=new THREE.Vector3(),_pr=new THREE.Vector3(),_mr=new THREE.Vector3();
     const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
     function setB1Mask(g){ const s=beats.b1.style; s.webkitMaskImage=g; s.maskImage=g; b1Masked=true; }
-    function clearB1Mask(reset){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } if(reset){ wLo=null; wHi=null; wArmed=false; } }
+    function clearB1Mask(reset){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } if(reset){ wLo=null; wHi=null; wDone=false; } }
     function updateOcclusion(p){
       if(!daCube||(mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(true); return; }   // heading hidden -> reset so it replays
       if(!b1Rect)measureB1();
+      if(wDone){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }             // already wiped -> stay gone (no reappear)
+      if(p<ARM_P){ clearB1Mask(); return; }                                                         // BEFORE the camera swing settles -> full heading, no projection
       daCube.getWorldPosition(_mc);
-      _cam.copy(_mc).applyMatrix4(camera.matrixWorldInverse);                                       // camera-space (z<0 = in front)
-      if(!wArmed){                                                                                  // ARM only once the camera has turned to the cube: cube in front + on screen + past RYNH
-        _pr.copy(_mc).project(camera);
-        if(!(_cam.z<-0.2 && _pr.x>-1.15 && _pr.x<1.15 && p>0.18)){ clearB1Mask(); return; }         // before the cue -> full heading
-        wArmed=true;
-      }
-      if(_cam.z>=-0.15){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }     // cube passed behind us -> fully gone
+      _cam.copy(_mc).applyMatrix4(camera.matrixWorldInverse);
+      if(_cam.z>=-0.15){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube swung behind us -> done
       _mr.setFromMatrixColumn(camera.matrixWorld,0); const hw=0.6*daCube.scale.x;                   // project the cube's left & right edges
       _pr.copy(_mc).addScaledVector(_mr,-hw).project(camera); const ax=(_pr.x*0.5+0.5)*innerWidth-b1Rect.left;
       _pr.copy(_mc).addScaledVector(_mr, hw).project(camera); const bx=(_pr.x*0.5+0.5)*innerWidth-b1Rect.left;
       const lo=Math.min(ax,bx), hi=Math.max(ax,bx);
-      wLo=wLo===null?lo:Math.min(wLo,lo); wHi=wHi===null?hi:Math.max(wHi,hi);                        // grow the erased band to the union of where the cube has been
-      const fe=18;
+      wLo=wLo===null?lo:Math.min(wLo,lo); wHi=wHi===null?hi:Math.max(wHi,hi);                        // grow the erased band to the union of where the cube has swept
+      const W=b1Rect.width||innerWidth, fe=18;
+      if(wLo<=2&&wHi>=W-2){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // band covers the whole heading -> latch done
       setB1Mask(`linear-gradient(90deg,#000 0,#000 ${wLo-fe}px,transparent ${wLo+fe}px,transparent ${wHi-fe}px,#000 ${wHi+fe}px,#000 100%)`);
     }
 
