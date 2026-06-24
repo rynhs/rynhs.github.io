@@ -831,25 +831,41 @@
 
     // ---- WIPE (data-driven): the D&A cube whooshes off-LEFT during the camera swing (scroll 0.14-0.30), then RE-ENTERS from the left and sweeps cleanly left->right across the screen 0.30->0.52. So: heading fully readable until ARM_P; after that, erase everything LEFT of the cube's real projected x (high-water -> monotonic) -> the cube eats the heading left->right as it crosses. Latches gone so the later orbit can't reappear it. ----
     const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
-    const ARM_P=0.29, WLEAD=40, WHW=0.92;   // ARM_P: arm after the swing as the cube re-enters from the left. WHW: how far out the right WALL is (×scale; bigger = further right, off the corner). WLEAD: extra px shift. All tunable.
+    const WIPE={armP:0.29, whw:0.92, lead:40, fe:20};   // live-tunable via #tune panel. armP: scroll where the wipe arms (after the swing). whw: how far out the cube's right WALL is (×scale). lead: extra px shift right. fe: edge softness.
+    window.WIPE=WIPE;   // also reachable from the console
     let b1Rect=null, b1Masked=false, wFront=null, wDone=false;
     const _mc=new THREE.Vector3(),_cam=new THREE.Vector3(),_mr=new THREE.Vector3(),_pr=new THREE.Vector3();
     const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
     function setB1Mask(g){ const s=beats.b1.style; s.webkitMaskImage=g; s.maskImage=g; b1Masked=true; }
     function clearB1Mask(reset){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } if(reset){ wFront=null; wDone=false; } }
     function updateOcclusion(p){
-      if((mode!=='CLUSTER'&&mode!=='EXITING')||p<ARM_P){ clearB1Mask(true); return; }                // out of scene, or before the cue / scrolled back -> full heading + reset (replays)
+      if((mode!=='CLUSTER'&&mode!=='EXITING')||p<WIPE.armP){ clearB1Mask(true); return; }             // out of scene, or before the cue / scrolled back -> full heading + reset (replays)
       if(!b1Rect)measureB1();
       if(wDone||parseFloat(beats.b1.style.opacity||0)<0.02){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // wiped, or faded out past the cue -> STAY gone (can't reappear at a later cube)
       daCube.getWorldPosition(_mc);
       _cam.copy(_mc).applyMatrix4(camera.matrixWorldInverse);
       if(_cam.z>=-0.15){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube behind us -> done
       _mr.setFromMatrixColumn(camera.matrixWorld,0);                                                  // camera-right -> aim at the cube's RIGHT WALL, not its near corner
-      const fx=(_pr.copy(_mc).addScaledVector(_mr,WHW*daCube.scale.x).project(camera).x*0.5+0.5)*innerWidth-b1Rect.left+WLEAD;
+      const fx=(_pr.copy(_mc).addScaledVector(_mr,WIPE.whw*daCube.scale.x).project(camera).x*0.5+0.5)*innerWidth-b1Rect.left+WIPE.lead;
       wFront=wFront===null?fx:Math.max(wFront,fx);                                                    // high-water -> only ever sweeps right, never un-wipes
-      const W=b1Rect.width||innerWidth, fe=20;
+      const W=b1Rect.width||innerWidth, fe=WIPE.fe;
       if(wFront>=W){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // swept fully across -> latch done
       setB1Mask(`linear-gradient(90deg,transparent 0,transparent ${wFront-fe}px,#000 ${wFront+fe}px,#000 100%)`);   // erase LEFT of the cube
+    }
+    // ---- live WIPE tuner: open the site with #tune to drag the knobs and watch the wipe update; values persist (localStorage) so you can tell me the final numbers ----
+    if(location.hash.toLowerCase().includes('tune')){
+      try{ Object.assign(WIPE, JSON.parse(localStorage.getItem('rynhWipe')||'{}')); }catch(e){}
+      const P=document.createElement('div');
+      P.style.cssText='position:fixed;top:64px;left:14px;z-index:99;width:236px;padding:12px 14px;border:1px solid rgba(190,225,255,.3);border-radius:12px;background:rgba(8,12,20,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:600 11px/1.4 ui-monospace,monospace;color:#cfe3f2;pointer-events:auto';
+      P.innerHTML='<div style="letter-spacing:.14em;opacity:.65;margin-bottom:8px">WIPE TUNER · #tune</div>';
+      const mk=(key,min,max,step)=>{ const row=document.createElement('div'); row.style.margin='9px 0';
+        const v=document.createElement('span'); v.style.cssText='float:right;color:#8fdcff'; v.textContent=WIPE[key];
+        const r=document.createElement('input'); r.type='range'; r.min=min; r.max=max; r.step=step; r.value=WIPE[key]; r.style.cssText='width:100%;margin-top:4px;accent-color:#8fdcff';
+        r.addEventListener('input',()=>{ WIPE[key]=parseFloat(r.value); v.textContent=r.value; clearB1Mask(true); localStorage.setItem('rynhWipe',JSON.stringify(WIPE)); });
+        row.append(document.createTextNode(key+' '),v,r); P.appendChild(row); };
+      mk('armP',0.10,0.50,0.01); mk('whw',0.30,1.60,0.02); mk('lead',-120,320,5); mk('fe',2,80,2);
+      const note=document.createElement('div'); note.style.cssText='margin-top:8px;opacity:.5;font-size:10px'; note.textContent='scroll to the heading to see it'; P.appendChild(note);
+      addEventListener('DOMContentLoaded',()=>document.body.appendChild(P)); if(document.body)document.body.appendChild(P);
     }
 
     // ---- bottom chapter scrubber (centered, equal cells): About | 6 services | Contact ----
