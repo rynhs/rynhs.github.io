@@ -831,7 +831,7 @@
 
     // ---- WIPE (data-driven): the D&A cube whooshes off-LEFT during the camera swing (scroll 0.14-0.30), then RE-ENTERS from the left and sweeps cleanly left->right across the screen 0.30->0.52. So: heading fully readable until ARM_P; after that, erase everything LEFT of the cube's real projected x (high-water -> monotonic) -> the cube eats the heading left->right as it crosses. Latches gone so the later orbit can't reappear it. ----
     const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
-    const WIPE={armP:0.29, whw:0.92, lead:40, fe:20};   // live-tunable via #tune panel. armP: scroll where the wipe arms (after the swing). whw: how far out the cube's right WALL is (×scale). lead: extra px shift right. fe: edge softness.
+    const WIPE={armP:0.14, whw:0.92, lead:-60, fe:2, angle:90};   // live-tunable via #tune panel. armP: scroll where the wipe arms. whw: how far out the cube's right WALL is (×scale). lead: extra px shift right. fe: edge softness. angle: wipe-line tilt in deg (90 = vertical; lean to match the cube's diagonal).
     window.WIPE=WIPE;   // also reachable from the console
     let b1Rect=null, b1Masked=false, wFront=null, wDone=false;
     const _mc=new THREE.Vector3(),_cam=new THREE.Vector3(),_mr=new THREE.Vector3(),_pr=new THREE.Vector3();
@@ -850,7 +850,7 @@
       wFront=wFront===null?fx:Math.max(wFront,fx);                                                    // high-water -> only ever sweeps right, never un-wipes
       const W=b1Rect.width||innerWidth, fe=WIPE.fe;
       if(wFront>=W){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // swept fully across -> latch done
-      setB1Mask(`linear-gradient(90deg,transparent 0,transparent ${wFront-fe}px,#000 ${wFront+fe}px,#000 100%)`);   // erase LEFT of the cube
+      setB1Mask(`linear-gradient(${WIPE.angle}deg,transparent 0,transparent ${wFront-fe}px,#000 ${wFront+fe}px,#000 100%)`);   // erase LEFT of the cube (angle = wipe-line tilt)
     }
     // ---- live WIPE tuner: open the site with #tune to drag the knobs and watch the wipe update; values persist (localStorage) so you can tell me the final numbers ----
     if(location.hash.toLowerCase().includes('tune')){
@@ -863,7 +863,7 @@
         const r=document.createElement('input'); r.type='range'; r.min=min; r.max=max; r.step=step; r.value=WIPE[key]; r.style.cssText='width:100%;margin-top:4px;accent-color:#8fdcff';
         r.addEventListener('input',()=>{ WIPE[key]=parseFloat(r.value); v.textContent=r.value; clearB1Mask(true); localStorage.setItem('rynhWipe',JSON.stringify(WIPE)); });
         row.append(document.createTextNode(key+' '),v,r); P.appendChild(row); };
-      mk('armP',0.10,0.50,0.01); mk('whw',0.30,1.60,0.02); mk('lead',-120,320,5); mk('fe',2,80,2);
+      mk('armP',0.10,0.50,0.01); mk('whw',0.30,1.60,0.02); mk('lead',-120,320,5); mk('fe',2,80,2); mk('angle',60,120,1);
       const note=document.createElement('div'); note.style.cssText='margin-top:8px;opacity:.5;font-size:10px'; note.textContent='scroll to the heading to see it'; P.appendChild(note);
       addEventListener('DOMContentLoaded',()=>document.body.appendChild(P)); if(document.body)document.body.appendChild(P);
     }
