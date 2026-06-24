@@ -831,22 +831,21 @@
 
     // ---- WIPE (data-driven): the D&A cube whooshes off-LEFT during the camera swing (scroll 0.14-0.30), then RE-ENTERS from the left and sweeps cleanly left->right across the screen 0.30->0.52. So: heading fully readable until ARM_P; after that, erase everything LEFT of the cube's real projected x (high-water -> monotonic) -> the cube eats the heading left->right as it crosses. Latches gone so the later orbit can't reappear it. ----
     const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
-    const ARM_P=0.30;   // arm AFTER the swing/whoosh, right as the cube re-enters from the left (tunable: lower = sooner)
+    const ARM_P=0.29, WLEAD=70;   // ARM_P: arm after the swing as the cube re-enters from the left. WLEAD: px the wipe leads the cube centre (sits ~the cube's leading edge + shifts timing a touch earlier). Both tunable.
     let b1Rect=null, b1Masked=false, wFront=null, wDone=false;
     const _mc=new THREE.Vector3(),_cam=new THREE.Vector3();
     const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
     function setB1Mask(g){ const s=beats.b1.style; s.webkitMaskImage=g; s.maskImage=g; b1Masked=true; }
     function clearB1Mask(reset){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } if(reset){ wFront=null; wDone=false; } }
     function updateOcclusion(p){
-      if(!daCube||(mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(true); return; }   // heading hidden -> reset so it replays
+      if((mode!=='CLUSTER'&&mode!=='EXITING')||p<ARM_P){ clearB1Mask(true); return; }                // out of scene, or before the cue / scrolled back -> full heading + reset (replays)
       if(!b1Rect)measureB1();
-      if(wDone){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }             // already wiped -> stay gone (no reappear)
-      if(p<ARM_P){ clearB1Mask(); return; }                                                         // before the cue -> full heading
+      if(wDone||parseFloat(beats.b1.style.opacity||0)<0.02){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // wiped, or faded out past the cue -> STAY gone (can't reappear at a later cube)
       daCube.getWorldPosition(_mc);
       _cam.copy(_mc).applyMatrix4(camera.matrixWorldInverse);
       if(_cam.z>=-0.15){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube behind us -> done
-      const fx=(_mc.project(camera).x*0.5+0.5)*innerWidth-b1Rect.left;                               // cube's current screen x
-      wFront=wFront===null?fx:Math.max(wFront,fx);                                                   // high-water -> only ever sweeps right, never un-wipes
+      const fx=(_mc.project(camera).x*0.5+0.5)*innerWidth-b1Rect.left+WLEAD;                          // cube screen x (+ lead)
+      wFront=wFront===null?fx:Math.max(wFront,fx);                                                    // high-water -> only ever sweeps right, never un-wipes
       const W=b1Rect.width||innerWidth, fe=20;
       if(wFront>=W){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // swept fully across -> latch done
       setB1Mask(`linear-gradient(90deg,transparent 0,transparent ${wFront-fe}px,#000 ${wFront+fe}px,#000 100%)`);   // erase LEFT of the cube
@@ -961,7 +960,7 @@
     function updateCaptions(p){
       beats.hero.style.opacity=win(p,-1,0.05,0.05);
       beats.b2.style.opacity=win(p,0.035,0.17);       // "engineering that reads the business" sits above RYNH at its face-on spot
-      beats.b1.style.opacity=win(p,0.14,0.60,0.05);   // "six problems / click a cube": fades in after RYNH like the other headers, holds FULLY visible through the read; the left->right wipe (updateOcclusion, 0.44-0.54) removes it as you pass D&A, opacity just fades the empty box after
+      beats.b1.style.opacity=win(p,0.14,0.52,0.04);   // "six problems / click a cube": fades in after RYNH, fully visible through the read, GONE by 0.52 (well before the Business Automation cube ~0.60, so the fading remnant can't show there); the left->right wipe (updateOcclusion) removes it as the D&A cube crosses
       const cop=win(p,0.90,1.2,0.06); beats.contact.style.opacity=cop; contactCta.style.pointerEvents=cop>0.5?'auto':'none';   // only clickable when the contact section is actually shown (full-height overlay otherwise eats clicks)
       hint.style.opacity=p<0.04?1:0;
     }
