@@ -829,26 +829,20 @@
     }
     buildTour();
 
-    // ---- WIPE: erase exactly the screen band the D&A cube has SWEPT over (union of its projected x-extent, growing). Tracks the real cube any direction, stays gone once swept, un-wipes only when the heading hides. So the heading is fully visible until the cube reaches it, then the cube eats it as it crosses. ----
-    const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
-    let b1Rect=null, b1Masked=false, wLo=null, wHi=null;
-    const _mc=new THREE.Vector3(),_me=new THREE.Vector3(),_mr=new THREE.Vector3();
+    // ---- WIPE: heading stays fully readable through the slow RYNH->D&A approach, then a clean LEFT->RIGHT wipe clears it only once you've passed RYNH and reach D&A (WIPE_A..WIPE_B). Pure scroll-driven -> never starts mid-text, never catches the cube behind the camera. ----
+    const WIPE_A=0.44, WIPE_B=0.54;   // fully visible until scroll 0.44 (well past RYNH at 0.09, camera now on D&A), wiped away by 0.54
+    let b1Rect=null, b1Masked=false;
     const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
     function setB1Mask(g){ const s=beats.b1.style; s.webkitMaskImage=g; s.maskImage=g; b1Masked=true; }
-    function clearB1Mask(reset){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } if(reset){ wLo=null; wHi=null; } }
-    function updateOcclusion(){
-      if(!daCube||(mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(true); return; }   // heading hidden -> reset so it replays next time
+    function clearB1Mask(){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } }
+    function updateOcclusion(p){
+      if((mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(); return; }
+      const prog=clamp((p-WIPE_A)/(WIPE_B-WIPE_A),0,1);
+      if(prog<=0){ clearB1Mask(); return; }                                              // fully visible before the wipe (whole read)
+      if(prog>=1){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; } // wiped -> gone (opacity backstop fades the empty box)
       if(!b1Rect)measureB1();
-      daCube.getWorldPosition(_mc);
-      _me.copy(_mc).applyMatrix4(camera.matrixWorldInverse);
-      if(_me.z>=-0.1){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube swept past + behind us -> fully gone
-      _mr.setFromMatrixColumn(camera.matrixWorld,0); const hw=0.6*daCube.scale.x;                // project the cube's left & right edges to screen x
-      _me.copy(_mc).addScaledVector(_mr,-hw).project(camera); const ax=(_me.x*0.5+0.5)*innerWidth-b1Rect.left;
-      _me.copy(_mc).addScaledVector(_mr, hw).project(camera); const bx=(_me.x*0.5+0.5)*innerWidth-b1Rect.left;
-      const lo=Math.min(ax,bx), hi=Math.max(ax,bx);
-      wLo=wLo===null?lo:Math.min(wLo,lo); wHi=wHi===null?hi:Math.max(wHi,hi);                     // grow the erased band to the union of where the cube has been
-      const fe=18;
-      setB1Mask(`linear-gradient(90deg,#000 0,#000 ${wLo-fe}px,transparent ${wLo+fe}px,transparent ${wHi-fe}px,#000 ${wHi+fe}px,#000 100%)`);
+      const W=b1Rect.width||innerWidth, front=(-0.05+1.12*prog)*W, fe=22;                 // sharp-ish front sweeps left->right across the heading
+      setB1Mask(`linear-gradient(90deg,transparent 0,transparent ${front-fe}px,#000 ${front+fe}px,#000 100%)`);
     }
 
     // ---- bottom chapter scrubber (centered, equal cells): About | 6 services | Contact ----
@@ -960,7 +954,7 @@
     function updateCaptions(p){
       beats.hero.style.opacity=win(p,-1,0.05,0.05);
       beats.b2.style.opacity=win(p,0.035,0.17);       // "engineering that reads the business" sits above RYNH at its face-on spot
-      beats.b1.style.opacity=win(p,0.14,0.58,0.05);   // "six problems / click a cube": fades in after RYNH like the other headers, holds FULLY visible through the read; the left->right wipe (updateOcclusion, 0.46-0.53) is what removes it on the exit past D&A, opacity just fades the empty box after
+      beats.b1.style.opacity=win(p,0.14,0.60,0.05);   // "six problems / click a cube": fades in after RYNH like the other headers, holds FULLY visible through the read; the left->right wipe (updateOcclusion, 0.44-0.54) removes it as you pass D&A, opacity just fades the empty box after
       const cop=win(p,0.90,1.2,0.06); beats.contact.style.opacity=cop; contactCta.style.pointerEvents=cop>0.5?'auto':'none';   // only clickable when the contact section is actually shown (full-height overlay otherwise eats clicks)
       hint.style.opacity=p<0.04?1:0;
     }
@@ -1176,7 +1170,7 @@
       updateOrbs(t);
       if(grade){ grade.uniforms.t.value=t; if(!dive) grade.uniforms.uTrans.value=0; }
       if(mode==='CLUSTER'||mode==='EXITING') updateCaptions(smooth);   // fade the captions back in DURING the exit (CSS-eased) instead of popping them at the end
-      updateOcclusion();   // D&A cube eats the heading across the band it sweeps over
+      updateOcclusion(dragging?scrubP:smooth);   // heading fully visible through the read, then L->R wipe as you pass D&A
       updateProg(dragging?scrubP:smooth);   // while scrubbing the fill tracks the cursor; otherwise the eased scroll (hidden via body.detail during a dive)
 
       composer?composer.render():renderer.render(scene,camera);
