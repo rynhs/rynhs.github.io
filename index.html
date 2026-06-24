@@ -136,14 +136,14 @@
   .sidenav .chev{font-size:20px;line-height:1;font-weight:600;opacity:.85;text-shadow:0 0 10px rgba(143,220,255,.6);transition:transform .32s cubic-bezier(.2,.85,.25,1),opacity .2s}
   .sidenav:hover .sidenav-tab{width:38px;background:linear-gradient(135deg,rgba(200,232,255,.24),rgba(150,195,255,.09));box-shadow:8px 0 38px rgba(0,0,0,.46),inset 0 1px 0 rgba(235,248,255,.6),inset -1px 0 0 rgba(190,225,255,.32)}
   .sidenav:hover .chev{transform:rotate(180deg);opacity:1}
-  /* glass slab that extends from the tab (frosted -> the hero behind reads as backdrop, no leak); labels float their cube on hover */
-  .navmenu{list-style:none;margin:0;padding:14px 18px 14px 18px;position:absolute;left:100%;top:50%;min-width:218px;
-    opacity:0;visibility:hidden;transform:translateY(-50%) translateX(-14px);transition:opacity .28s,transform .32s cubic-bezier(.2,.85,.25,1),visibility .28s;pointer-events:none;
-    border:1px solid rgba(200,230,255,.26);border-left:none;border-radius:0 16px 16px 0;
-    background:linear-gradient(135deg,rgba(34,52,76,.52),rgba(10,16,28,.66));
-    backdrop-filter:blur(26px) saturate(170%);-webkit-backdrop-filter:blur(26px) saturate(170%);
-    box-shadow:12px 0 44px rgba(0,0,0,.5),inset 0 1px 0 rgba(235,248,255,.32)}
-  .sidenav:hover .navmenu{opacity:1;visibility:visible;transform:translateY(-50%) translateX(-2px);pointer-events:auto}
+  /* floating glass card next to the tab (all corners rounded -> no clipped seam; frosted so the hero reads as backdrop); labels float their cube on hover */
+  .navmenu{list-style:none;margin:0;padding:16px 20px;position:absolute;left:calc(100% + 10px);top:50%;min-width:216px;
+    opacity:0;visibility:hidden;transform:translateY(-50%) translateX(-12px);transition:opacity .28s,transform .32s cubic-bezier(.2,.85,.25,1),visibility .28s;pointer-events:none;
+    border:1px solid rgba(200,230,255,.24);border-radius:18px;
+    background:linear-gradient(150deg,rgba(34,52,76,.5),rgba(10,16,28,.64));
+    backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);
+    box-shadow:0 26px 64px rgba(0,0,0,.5),inset 0 1px 0 rgba(235,248,255,.28)}
+  .sidenav:hover .navmenu{opacity:1;visibility:visible;transform:translateY(-50%) translateX(0);pointer-events:auto}
   .navmenu li{opacity:0;transform:translateX(-9px);transition:opacity .3s ease,transform .34s cubic-bezier(.2,.85,.25,1)}
   .sidenav:hover .navmenu li{opacity:1;transform:translateX(0);transition-delay:calc(55ms + var(--i,0)*42ms)}
   .navmenu button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;cursor:pointer;white-space:nowrap;
@@ -829,20 +829,26 @@
     }
     buildTour();
 
-    // ---- WIPE: the heading fades in and stays FULLY visible while you read it (no mask), then wipes left->right only on the EXIT (as you pass D&A). Scroll-driven over WIPE_A..WIPE_B -> smooth, sharp, no flicker; un-wipes if you scroll back. ----
-    const WIPE_A=0.46, WIPE_B=0.53;   // fully readable until 0.46, then wiped away by 0.53 (D&A centres ~0.44, so this is the pass/exit)
-    let b1Rect=null, b1Masked=false;
+    // ---- WIPE: erase exactly the screen band the D&A cube has SWEPT over (union of its projected x-extent, growing). Tracks the real cube any direction, stays gone once swept, un-wipes only when the heading hides. So the heading is fully visible until the cube reaches it, then the cube eats it as it crosses. ----
+    const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
+    let b1Rect=null, b1Masked=false, wLo=null, wHi=null;
+    const _mc=new THREE.Vector3(),_me=new THREE.Vector3(),_mr=new THREE.Vector3();
     const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
     function setB1Mask(g){ const s=beats.b1.style; s.webkitMaskImage=g; s.maskImage=g; b1Masked=true; }
-    function clearB1Mask(){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } }
-    function updateOcclusion(p){
-      if((mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(); return; }
-      const prog=clamp((p-WIPE_A)/(WIPE_B-WIPE_A),0,1);
-      if(prog<=0){ clearB1Mask(); return; }                                              // fully visible before the wipe
-      if(prog>=1){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; } // wiped -> gone (opacity backstop fades the empty box)
+    function clearB1Mask(reset){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } if(reset){ wLo=null; wHi=null; } }
+    function updateOcclusion(){
+      if(!daCube||(mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(true); return; }   // heading hidden -> reset so it replays next time
       if(!b1Rect)measureB1();
-      const W=b1Rect.width||innerWidth, front=(-0.05+1.12*prog)*W, fe=24;                 // sharp front sweeps left->right across the heading
-      setB1Mask(`linear-gradient(90deg,transparent 0,transparent ${front-fe}px,#000 ${front+fe}px,#000 100%)`);
+      daCube.getWorldPosition(_mc);
+      _me.copy(_mc).applyMatrix4(camera.matrixWorldInverse);
+      if(_me.z>=-0.1){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube swept past + behind us -> fully gone
+      _mr.setFromMatrixColumn(camera.matrixWorld,0); const hw=0.6*daCube.scale.x;                // project the cube's left & right edges to screen x
+      _me.copy(_mc).addScaledVector(_mr,-hw).project(camera); const ax=(_me.x*0.5+0.5)*innerWidth-b1Rect.left;
+      _me.copy(_mc).addScaledVector(_mr, hw).project(camera); const bx=(_me.x*0.5+0.5)*innerWidth-b1Rect.left;
+      const lo=Math.min(ax,bx), hi=Math.max(ax,bx);
+      wLo=wLo===null?lo:Math.min(wLo,lo); wHi=wHi===null?hi:Math.max(wHi,hi);                     // grow the erased band to the union of where the cube has been
+      const fe=18;
+      setB1Mask(`linear-gradient(90deg,#000 0,#000 ${wLo-fe}px,transparent ${wLo+fe}px,transparent ${wHi-fe}px,#000 ${wHi+fe}px,#000 100%)`);
     }
 
     // ---- bottom chapter scrubber (centered, equal cells): About | 6 services | Contact ----
@@ -1170,7 +1176,7 @@
       updateOrbs(t);
       if(grade){ grade.uniforms.t.value=t; if(!dive) grade.uniforms.uTrans.value=0; }
       if(mode==='CLUSTER'||mode==='EXITING') updateCaptions(smooth);   // fade the captions back in DURING the exit (CSS-eased) instead of popping them at the end
-      updateOcclusion(dragging?scrubP:smooth);   // heading fully visible, then wipes on exit past D&A
+      updateOcclusion();   // D&A cube eats the heading across the band it sweeps over
       updateProg(dragging?scrubP:smooth);   // while scrubbing the fill tracks the cursor; otherwise the eased scroll (hidden via body.detail during a dive)
 
       composer?composer.render():renderer.render(scene,camera);
