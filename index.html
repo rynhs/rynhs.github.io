@@ -831,9 +831,9 @@
 
     // ---- WIPE (data-driven): the D&A cube whooshes off-LEFT during the camera swing (scroll 0.14-0.30), then RE-ENTERS from the left and sweeps cleanly left->right across the screen 0.30->0.52. So: heading fully readable until ARM_P; after that, erase everything LEFT of the cube's real projected x (high-water -> monotonic) -> the cube eats the heading left->right as it crosses. Latches gone so the later orbit can't reappear it. ----
     const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
-    const ARM_P=0.29, WLEAD=70;   // ARM_P: arm after the swing as the cube re-enters from the left. WLEAD: px the wipe leads the cube centre (sits ~the cube's leading edge + shifts timing a touch earlier). Both tunable.
+    const ARM_P=0.29, WLEAD=40, WHW=0.92;   // ARM_P: arm after the swing as the cube re-enters from the left. WHW: how far out the right WALL is (×scale; bigger = further right, off the corner). WLEAD: extra px shift. All tunable.
     let b1Rect=null, b1Masked=false, wFront=null, wDone=false;
-    const _mc=new THREE.Vector3(),_cam=new THREE.Vector3();
+    const _mc=new THREE.Vector3(),_cam=new THREE.Vector3(),_mr=new THREE.Vector3(),_pr=new THREE.Vector3();
     const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
     function setB1Mask(g){ const s=beats.b1.style; s.webkitMaskImage=g; s.maskImage=g; b1Masked=true; }
     function clearB1Mask(reset){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } if(reset){ wFront=null; wDone=false; } }
@@ -844,7 +844,8 @@
       daCube.getWorldPosition(_mc);
       _cam.copy(_mc).applyMatrix4(camera.matrixWorldInverse);
       if(_cam.z>=-0.15){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube behind us -> done
-      const fx=(_mc.project(camera).x*0.5+0.5)*innerWidth-b1Rect.left+WLEAD;                          // cube screen x (+ lead)
+      _mr.setFromMatrixColumn(camera.matrixWorld,0);                                                  // camera-right -> aim at the cube's RIGHT WALL, not its near corner
+      const fx=(_pr.copy(_mc).addScaledVector(_mr,WHW*daCube.scale.x).project(camera).x*0.5+0.5)*innerWidth-b1Rect.left+WLEAD;
       wFront=wFront===null?fx:Math.max(wFront,fx);                                                    // high-water -> only ever sweeps right, never un-wipes
       const W=b1Rect.width||innerWidth, fe=20;
       if(wFront>=W){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // swept fully across -> latch done
