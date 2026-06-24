@@ -830,23 +830,29 @@
     }
     buildTour();
 
-    // ---- "the D&A cube passes IN FRONT of the heading": punch a cube-shaped hole in #beat-1 that tracks the cube on screen, so the text reads as occluded by it ----
+    // ---- SQUEEGEE: the D&A cube wipes the "Six problems we make disappear" heading away in its wake as it crosses the screen ("we make disappear", literally). Monotonic (high-water) so the text vanishes for good once swept, never flickers back mid-sweep. ----
     const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
-    let b1Rect=null, b1Masked=false; const _mc=new THREE.Vector3(),_me=new THREE.Vector3(),_mr=new THREE.Vector3();
+    let b1Rect=null, b1Masked=false, wipeFront=null, wipeDir=0, wipeStartX=null;
+    const _mc=new THREE.Vector3(),_me=new THREE.Vector3(),_mr=new THREE.Vector3();
     const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
-    function clearB1Mask(){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } }
+    function setB1Mask(g){ const s=beats.b1.style; s.webkitMaskImage=g; s.maskImage=g; b1Masked=true; }
+    function clearB1Mask(reset){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } if(reset){ wipeFront=null; wipeDir=0; wipeStartX=null; } }
     function updateOcclusion(){
-      if(!daCube||(mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(); return; }
-      daCube.getWorldPosition(_mc);
-      _me.copy(_mc).applyMatrix4(camera.matrixWorldInverse); if(_me.z>=-0.1){ clearB1Mask(); return; }   // cube behind camera -> no mask
+      if(!daCube||(mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(true); return; }   // heading hidden -> clear + reset so scrolling back replays the wipe
       if(!b1Rect)measureB1();
-      const cp=_mc.clone().project(camera), sx=(cp.x*.5+.5)*innerWidth, sy=(-cp.y*.5+.5)*innerHeight;
-      _mr.setFromMatrixColumn(camera.matrixWorld,0);                                  // camera right (world) -> screen radius from a half-width edge point
-      const ep=_me.copy(_mc).addScaledVector(_mr,0.62*daCube.scale.x).project(camera);
-      const r=Math.hypot((ep.x*.5+.5)*innerWidth-sx,(-ep.y*.5+.5)*innerHeight-sy)*1.28;   // pad to cover the rounded silhouette + glow
-      const mx=sx-b1Rect.left, my=sy-b1Rect.top, inner=r*0.74, outer=r*1.1;
-      const g=`radial-gradient(circle ${outer}px at ${mx}px ${my}px, transparent ${inner}px, #000 ${outer}px)`;   // transparent disc = text hidden -> the canvas cube shows through = cube in front
-      beats.b1.style.webkitMaskImage=g; beats.b1.style.maskImage=g; b1Masked=true;
+      daCube.getWorldPosition(_mc);
+      _me.copy(_mc).applyMatrix4(camera.matrixWorldInverse);
+      if(_me.z>=-0.1){ if(wipeDir!==0) setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube swept past + behind us -> heading fully wiped (opacity backstop fades the empty box)
+      const sx=(_mc.clone().project(camera).x*.5+.5)*innerWidth-b1Rect.left;            // cube centre x, element space
+      _mr.setFromMatrixColumn(camera.matrixWorld,0);
+      const hw=Math.max(46,Math.abs((_me.copy(_mc).addScaledVector(_mr,0.62*daCube.scale.x).project(camera).x*.5+.5)*innerWidth-b1Rect.left-sx))*1.15;   // half cube width on screen = soft feather of the wipe front
+      if(wipeStartX===null) wipeStartX=sx;
+      if(wipeDir===0 && Math.abs(sx-wipeStartX)>30) wipeDir=sx>wipeStartX?1:-1;          // lock the sweep direction once the cube clearly moves
+      if(wipeDir>0){ wipeFront=Math.max(wipeFront??sx,sx);                               // cube moving right -> erase to its LEFT
+        setB1Mask(`linear-gradient(90deg,transparent 0,transparent ${wipeFront-hw}px,#000 ${wipeFront+hw}px,#000 100%)`); }
+      else if(wipeDir<0){ wipeFront=Math.min(wipeFront??sx,sx);                          // cube moving left -> erase to its RIGHT
+        setB1Mask(`linear-gradient(90deg,#000 0,#000 ${wipeFront-hw}px,transparent ${wipeFront+hw}px,transparent 100%)`); }
+      else clearB1Mask(false);                                                          // not moving yet -> full heading (max read time)
     }
 
     // ---- bottom chapter scrubber (centered, equal cells): About | 6 services | Contact ----
@@ -958,7 +964,7 @@
     function updateCaptions(p){
       beats.hero.style.opacity=win(p,-1,0.05,0.05);
       beats.b2.style.opacity=win(p,0.035,0.17);       // "engineering that reads the business" sits above RYNH at its face-on spot
-      beats.b1.style.opacity=win(p,0.19,0.43);        // "six problems / click a cube" shows after RYNH and fades out just before the CS&A cube (~0.45)
+      beats.b1.style.opacity=win(p,0.15,0.52,0.045);  // "six problems / click a cube" appears earlier + holds LONGER (more read time); the D&A cube's squeegee wipe is what makes it disappear as it crosses (~0.34-0.46), opacity is just the backstop after
       const cop=win(p,0.90,1.2,0.06); beats.contact.style.opacity=cop; contactCta.style.pointerEvents=cop>0.5?'auto':'none';   // only clickable when the contact section is actually shown (full-height overlay otherwise eats clicks)
       hint.style.opacity=p<0.04?1:0;
     }
