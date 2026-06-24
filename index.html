@@ -123,22 +123,25 @@
   #stage canvas{display:block;width:100%;height:100%}
   #scroll-rig{position:relative;height:700vh;z-index:1;pointer-events:none}
 
-  .topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:18px 26px;pointer-events:none;transition:opacity .45s ease}
-  body.detail .topbar,body.detail #sound{opacity:0;pointer-events:none}
-  .navwrap{position:relative;pointer-events:auto}
-  .topbar .mark{font-family:"Syncopate",sans-serif;font-weight:700;letter-spacing:.08em;font-size:15px;background:none;border:none;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:4px 2px}
-  .topbar .mark b{color:var(--accent)}
-  .chev{font-size:14px;line-height:1;opacity:.65;transform:translateY(-1px);transition:transform .3s,opacity .2s}
-  .navwrap:hover .chev{opacity:1;transform:translateY(1px) rotate(180deg)}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:flex-end;padding:18px 26px;pointer-events:none;transition:opacity .45s ease}
+  body.detail .topbar,body.detail #sound,body.detail .sidenav{opacity:0;pointer-events:none}
+  /* left-edge slide-out menu (replaces the RYNH wordmark dropdown; wordmark saved in REMOVED-CODE.md) */
+  .sidenav{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:20;display:flex;align-items:center;pointer-events:none;transition:opacity .45s ease}
+  .sidenav-tab{pointer-events:auto;display:flex;align-items:center;justify-content:center;width:30px;height:62px;cursor:pointer;
+    background:linear-gradient(160deg,rgba(34,50,72,.5),rgba(11,18,30,.6));border:1px solid rgba(190,225,255,.28);border-left:none;border-radius:0 14px 14px 0;
+    backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);box-shadow:6px 0 26px rgba(0,0,0,.42);color:var(--accent);transition:width .25s,background .25s}
+  .sidenav .chev{font-size:21px;line-height:1;font-weight:700;transition:transform .32s cubic-bezier(.2,.85,.25,1)}
+  .sidenav:hover .sidenav-tab{width:35px;background:linear-gradient(160deg,rgba(46,66,94,.62),rgba(14,22,36,.72))}
+  .sidenav:hover .chev{transform:translateX(1px) rotate(180deg)}
   /* chromeless floating labels — the payoff is in the 3D scene (the cube floats forward + glows on hover), not a boxed dropdown */
-  .navmenu{list-style:none;margin:9px 0 0;padding:4px 2px;position:absolute;top:100%;left:2px;min-width:208px;
-    opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .28s,transform .28s,visibility .28s}
-  .navwrap:hover .navmenu{opacity:1;visibility:visible;transform:translateY(0)}
+  .navmenu{list-style:none;margin:0;padding:8px 10px 8px 16px;position:absolute;left:100%;top:50%;min-width:210px;
+    opacity:0;visibility:hidden;transform:translateY(-50%) translateX(-10px);transition:opacity .28s,transform .32s cubic-bezier(.2,.85,.25,1),visibility .28s;pointer-events:none}
+  .sidenav:hover .navmenu{opacity:1;visibility:visible;transform:translateY(-50%) translateX(0);pointer-events:auto}
   .navmenu li{opacity:0;transform:translateX(-9px);transition:opacity .3s ease,transform .34s cubic-bezier(.2,.85,.25,1)}
-  .navwrap:hover .navmenu li{opacity:1;transform:translateX(0);transition-delay:calc(55ms + var(--i,0)*42ms)}
-  .navmenu button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;cursor:pointer;
+  .sidenav:hover .navmenu li{opacity:1;transform:translateX(0);transition-delay:calc(55ms + var(--i,0)*42ms)}
+  .navmenu button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;cursor:pointer;white-space:nowrap;
     padding:7px 8px;color:#9fb0c0;font:600 13px/1 "Space Grotesk",sans-serif;letter-spacing:.005em;
-    text-shadow:0 1px 10px rgba(0,0,0,.7),0 1px 3px rgba(0,0,0,.6);transition:color .2s,transform .2s,letter-spacing .2s}
+    text-shadow:0 1px 10px rgba(0,0,0,.75),0 1px 3px rgba(0,0,0,.6);transition:color .2s,transform .2s,letter-spacing .2s}
   .navmenu .tick{width:7px;height:7px;flex:none;border-radius:2px;background:var(--c);transform:rotate(45deg) scale(.62);opacity:.55;
     box-shadow:0 0 0 0 var(--c);transition:transform .26s cubic-bezier(.2,.85,.25,1),opacity .26s,box-shadow .26s}
   .navmenu button:hover{color:#fff;transform:translateX(5px);letter-spacing:.02em}
@@ -375,12 +378,12 @@
 
 
   <div class="topbar">
-    <div class="navwrap">
-      <button class="mark" id="navmark" aria-haspopup="true"><span class="wm">RY<b>NH</b></span><span class="chev">⌄</span></button>
-      <ul class="navmenu" id="navmenu"></ul>
-    </div>
     <a href="mailto:ryan@rynh.net?subject=Let's%20talk" data-contact="Topbar">Let's talk →</a>
   </div>
+  <nav class="sidenav" id="sidenav" aria-label="Services">
+    <button class="sidenav-tab" aria-haspopup="true" aria-label="Open menu"><span class="chev">›</span></button>
+    <ul class="navmenu" id="navmenu"></ul>
+  </nav>
 
   <div id="stage" aria-hidden="true"></div>
   <div id="scroll-rig"></div>
@@ -697,25 +700,7 @@
         for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i);
           const dx=nz.noise(v.x*F+11,v.y*F,v.z*F), dy=nz.noise(v.x*F,v.y*F+27,v.z*F), dz=nz.noise(v.x*F,v.y*F,v.z*F+5);
           p.setXYZ(i, v.x+dx*A, v.y+dy*A, v.z+dz*A); } p.needsUpdate=true; g.computeVertexNormals(); }
-      g.computeBoundingBox(); const BB=g.boundingBox, probe=new THREE.Mesh(g,new THREE.MeshBasicMaterial());
-      // icicles grown from the bottom edge, merged into the wordmark = one continuous piece of ice
-      const ray=new THREE.Raycaster(), UP=new THREE.Vector3(0,1,0), Rr=(a,b)=>a+(b-a)*Math.random();
-      const cleanG=o=>{ const q=o.index?o.toNonIndexed():o.clone(); for(const k of Object.keys(q.attributes)) if(k!=='position'&&k!=='normal'&&k!=='uv') q.deleteAttribute(k); if(!q.attributes.normal)q.computeVertexNormals(); return q; };
-      const bottomY=(x,z)=>{ ray.set(new THREE.Vector3(x,BB.min.y-1,z),UP); const r=ray.intersectObject(probe,false); return (r.length&&r[0].face.normal.y<-0.2)?r[0].point.y:null; };
-      const fits=(x,z,y,r)=>{ for(const o of [[r,0],[-r,0],[0,r],[0,-r]]){ const yy=bottomY(x+o[0],z+o[1]); if(yy===null||Math.abs(yy-y)>0.12) return false; } return true; };
-      const YS=[0,0.10,0.22,0.40,0.55,0.72,0.86,0.95,1.0], RS=[1,0.85,0.96,0.64,0.73,0.44,0.29,0.13,0.02];
-      const icicle=(L,r0)=>{ const pts=[]; for(let i=0;i<YS.length;i++) pts.push(new THREE.Vector2(Math.max(0.004,r0*RS[i]),-L*YS[i])); return new THREE.LatheGeometry(pts,8).toNonIndexed(); };
-      const hits=[], hh=BB.max.y-BB.min.y, st=0.03;
-      for(let x=BB.min.x;x<=BB.max.x;x+=st)for(let z=BB.min.z+0.05;z<=BB.max.z-0.05;z+=st){ ray.set(new THREE.Vector3(x,BB.min.y-1,z),UP); const r=ray.intersectObject(probe,false); if(r.length&&r[0].face.normal.y<-0.25&&r[0].point.y<BB.min.y+hh*0.14) hits.push(r[0].point.clone()); }
-      hits.sort((a,b)=>a.x-b.x);
-      const bunches=[]; let cur=[]; for(const p of hits){ if(cur.length&&p.x-cur[cur.length-1].x>0.12){ bunches.push(cur); cur=[]; } cur.push(p); } if(cur.length) bunches.push(cur);
-      const parts=[cleanG(g)];
-      for(const b of bunches){ const minX=b[0].x, span=Math.max(1e-3,b[b.length-1].x-minX), used=[];
-        for(let k=0;k<3;k++){ const tx=minX+span*(0.18+0.64*k/2), cands=b.filter(p=>Math.abs(p.x-tx)<=st*1.6); if(!cands.length) continue;
-          for(let t=0;t<10;t++){ const p=cands[(Math.random()*cands.length)|0], r0=Rr(0.024,0.05), z=Math.min(Math.max(p.z,BB.min.z+r0+0.02),BB.max.z-r0-0.02);
-            if(!fits(p.x,z,p.y,r0+0.01)) continue; if(used.some(u=>Math.abs(u.x-p.x)<0.05&&Math.abs(u.z-z)<0.12)) continue;
-            const L=0.17+Math.pow(Math.random(),0.95)*0.47, ic=icicle(L,r0); ic.rotateZ(Rr(-0.06,0.06)); ic.translate(p.x,p.y+0.035,z); parts.push(cleanG(ic)); used.push({x:p.x,z}); break; } } }
-      core.geometry.dispose(); core.geometry=mergeGeometries(parts,false);
+      core.geometry.dispose(); core.geometry=g;   // icicles removed -> plain dented crystal wordmark (icicle generator saved in REMOVED-CODE.md)
       // cube snow texture, calmed so it reads frosted not shimmery
       const cN=snowNormal.clone(); cN.needsUpdate=true; cN.wrapS=cN.wrapT=THREE.RepeatWrapping; cN.repeat.set(1.0,1.0);
       const m=core.material; m.normalMap=cN; m.normalScale.set(0.18,0.18); m.roughness=0.08; m.thickness=1.4; m.clearcoatRoughness=0.12; m.iridescence=0.06; m.dispersion=0.35; m.needsUpdate=true; }   // match the cubes' clarity (roughness/thickness); low normalScale keeps shimmer down without frosting it
@@ -741,18 +726,18 @@
       cluster.add(cube); clickable.push(cube);
     });
 
-    // RYNH hover menu -> hovering a label floats that service's ACTUAL cube forward in the scene; click dives in
+    // left slide-out menu -> hovering a label floats that service's ACTUAL cube forward in the scene; click dives in
     let navPick=null; const _presP=new THREE.Vector3(),_toCam=new THREE.Vector3();
     { const navmenu=document.getElementById('navmenu');
       SERVICES.forEach((s,i)=>{ const cube=clickable[i+1];
         const li=document.createElement('li'); li.style.setProperty('--i',i);
         const b=document.createElement('button'); b.style.setProperty('--c',s.accent);
         b.innerHTML='<span class="tick"></span>'+s.title;
-        b.addEventListener('pointerenter',()=>{ if(mode==='CLUSTER') navPick=cube; });
+        b.addEventListener('pointerenter',()=>{ if(mode==='CLUSTER'){ navPick=cube; sfx.resume(); sfx.hover(); } });   // same hover ding as the cubes
         b.addEventListener('pointerleave',()=>{ if(navPick===cube) navPick=null; });
         b.addEventListener('click',()=>{ if(mode==='CLUSTER'){ cube.position.set(cube.userData.hx,cube.userData.homeY,cube.userData.hz); cube.scale.setScalar(1); navPick=null; diveInto(cube); } });
         li.appendChild(b); navmenu.appendChild(li); });
-      document.querySelector('.navwrap').addEventListener('pointerleave',()=>{ navPick=null; }); }
+      document.getElementById('sidenav').addEventListener('pointerleave',()=>{ navPick=null; }); }
     { const sb=document.getElementById('sound'),ss=document.getElementById('sound-state');
       sb.addEventListener('click',()=>{ sfx.resume(); ss.textContent=sfx.toggle()?'On':'Off'; }); }
 
@@ -837,20 +822,22 @@
     }
     buildTour();
 
-    // ---- WIPE: as you arrive at the D&A cube, the "Six problems we make disappear" heading wipes left->right and is gone ("we make disappear", literally). Driven purely by scroll progress -> monotonic + smooth, no projection/flicker. Un-wipes if you scroll back up. ----
-    const WIPE_A=0.36, WIPE_B=0.48;   // scroll band over which the heading wipes away (straddles D&A arrival at ~0.44)
-    let b1Rect=null, b1Masked=false;
+    // ---- WIPE: the D&A cube's RIGHT EDGE is the wipe line. Everything left of it (under/behind the cube) is erased, sharply -> the cube visibly eats "Six problems we make disappear" as it sweeps across. Stateless (just the cube's projected edge) so no flicker; un-wipes if you scroll back. ----
+    const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
+    let b1Rect=null, b1Masked=false; const _mc=new THREE.Vector3(),_me=new THREE.Vector3(),_mr=new THREE.Vector3();
     const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
     function setB1Mask(g){ const s=beats.b1.style; s.webkitMaskImage=g; s.maskImage=g; b1Masked=true; }
     function clearB1Mask(){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } }
-    function updateOcclusion(p){
-      if((mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(); return; }
-      const prog=clamp((p-WIPE_A)/(WIPE_B-WIPE_A),0,1);
-      if(prog<=0){ clearB1Mask(); return; }                                              // before D&A -> full heading
-      if(prog>=1){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; } // after -> fully wiped (opacity backstop fades the empty box)
+    function updateOcclusion(){
+      if(!daCube||(mode!=='CLUSTER'&&mode!=='EXITING')||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(); return; }
       if(!b1Rect)measureB1();
-      const W=b1Rect.width||innerWidth, front=(-0.1+1.2*prog)*W, fe=Math.max(70,W*0.10);  // soft front sweeps from off-left to off-right across the read; feather ~10% width
-      setB1Mask(`linear-gradient(90deg,transparent 0,transparent ${front-fe}px,#000 ${front+fe}px,#000 100%)`);
+      daCube.getWorldPosition(_mc);
+      _me.copy(_mc).applyMatrix4(camera.matrixWorldInverse);
+      if(_me.z>=-0.1){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube swept past + behind us -> fully erased
+      _mr.setFromMatrixColumn(camera.matrixWorld,0);                                              // camera right (world)
+      const edge=_me.copy(_mc).addScaledVector(_mr,0.62*daCube.scale.x).project(camera);          // cube centre + half-width = its RIGHT edge
+      const fx=(edge.x*0.5+0.5)*innerWidth-b1Rect.left, fe=12;                                     // SHARP front (12px feather) sitting on the cube edge
+      setB1Mask(`linear-gradient(90deg,transparent 0,transparent ${fx-fe}px,#000 ${fx+fe}px,#000 100%)`);
     }
 
     // ---- bottom chapter scrubber (centered, equal cells): About | 6 services | Contact ----
@@ -861,7 +848,7 @@
       const invWarp=u=>{ for(let i=1;i<knots.length;i++){ if(u<=knots[i][1]){ const t=(u-knots[i-1][1])/(knots[i][1]-knots[i-1][1]); return knots[i-1][0]+t*(knots[i][0]-knots[i-1][0]); } } return 1; };
       const cells=[                                                                 // a/b = scroll-p span; cells are EQUAL width, so the fill just runs faster/slower per section. chap = which chapter it belongs to (for the group lift)
         {a:0,b:0.30,anchor:0.09,label:'About Us',short:'About',chap:0},             // hero + RYNH fly-past; click -> RYNH face-on (p≈0.09)
-        ...tourCubes.map((c,k)=>({a:0.30+k*0.10,b:0.30+(k+1)*0.10,anchor:invWarp((k+2)/np1),label:c.userData.project.title,short:c.userData.project.kind,chap:1})),  // one cell per service, in scroll order
+        ...tourCubes.map((c,k)=>({a:0.30+k*0.10,b:0.30+(k+1)*0.10,anchor:invWarp((k+2)/np1),label:c.userData.project.title,short:c.userData.project.kind,chap:1,cube:c})),  // one cell per service, in scroll order (cube = float/glow target on hover)
         {a:0.90,b:1.0,anchor:1.0,label:'Contact',short:'Contact',chap:2},
       ];
       const dMax=()=>document.documentElement.scrollHeight-innerHeight;
@@ -871,10 +858,10 @@
         btn.setAttribute('aria-label','Jump to '+s.label);
         const fil=document.createElement('span'); fil.className='fil'; btn.appendChild(fil);
         const lbl=document.createElement('span'); lbl.className='prog-lbl'; lbl.textContent=s.short; btn.appendChild(lbl);   // shown while scrubbing
-        const rec={el:btn,fil,a:s.a,b:s.b,anchor:s.anchor,label:s.label,chap:s.chap};
+        const rec={el:btn,fil,a:s.a,b:s.b,anchor:s.anchor,label:s.label,chap:s.chap,cube:s.cube};
         btn.addEventListener('click',()=>{ if(suppressClick)return; window.scrollTo({top:s.anchor*dMax(),behavior:reduce?'auto':'smooth'}); sfx.resume(); sfx.blip(); });   // keyboard path; pointer taps are handled in onUp (suppressClick blocks the synthetic click)
-        btn.addEventListener('pointerenter',()=>{ if(dragging)return; showTip(rec); sfx.hover(); });
-        btn.addEventListener('pointerleave',()=>{ if(!dragging)tip.classList.remove('show'); });
+        btn.addEventListener('pointerenter',()=>{ if(dragging)return; showTip(rec); sfx.hover(); if(rec.cube&&mode==='CLUSTER') navPick=rec.cube; });   // same float/glow as the left menu
+        btn.addEventListener('pointerleave',()=>{ if(!dragging)tip.classList.remove('show'); if(navPick===rec.cube) navPick=null; });
         prog.appendChild(btn); SEGS.push(rec); });
 
       // ---- drag-to-scrub: grab the bar and slide to scroll (for anyone who'd rather not wheel) ----
@@ -1169,6 +1156,7 @@
           } else {
             const tgt=(bobbing&&c!==hovered)?u.homeY+Math.sin(t*0.6+u.idx*1.7)*0.07:u.homeY;
             c.position.x+=(u.hx-c.position.x)*0.1; c.position.z+=(u.hz-c.position.z)*0.1; c.position.y+=(tgt-c.position.y)*0.12;   // return home (incl. from a float) + bob
+            if(navPick){ c.material.emissiveIntensity=lerp(c.material.emissiveIntensity,0,0.16); c.scale.setScalar(lerp(c.scale.x,1,0.16)); }   // a pick is active (updateHover is suppressed) -> actively cool every OTHER cube so the previous pick stops glowing the instant you move off/between items
           } }); }
       if(mode==='CLUSTER') updateHover();
       if(!reduce){ const sway=1-ryW; core.rotation.y=(-cluster.rotation.y+Math.sin(t*0.3)*0.32)*sway; core.rotation.x=0;  // upright (no tilt) so the icicles always hang straight down; gentle y-sway only
@@ -1177,7 +1165,7 @@
       updateOrbs(t);
       if(grade){ grade.uniforms.t.value=t; if(!dive) grade.uniforms.uTrans.value=0; }
       if(mode==='CLUSTER'||mode==='EXITING') updateCaptions(smooth);   // fade the captions back in DURING the exit (CSS-eased) instead of popping them at the end
-      updateOcclusion(dragging?scrubP:smooth);   // scroll-driven left->right wipe of #beat-1 as you reach the D&A cube
+      updateOcclusion();   // D&A cube's right edge wipes #beat-1 as it sweeps across
       updateProg(dragging?scrubP:smooth);   // while scrubbing the fill tracks the cursor; otherwise the eased scroll (hidden via body.detail during a dive)
 
       composer?composer.render():renderer.render(scene,camera);
