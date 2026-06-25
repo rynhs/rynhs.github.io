@@ -829,28 +829,27 @@
     }
     buildTour();
 
-    // ---- WIPE (data-driven): the D&A cube whooshes off-LEFT during the camera swing (scroll 0.14-0.30), then RE-ENTERS from the left and sweeps cleanly left->right across the screen 0.30->0.52. So: heading fully readable until ARM_P; after that, erase everything LEFT of the cube's real projected x (high-water -> monotonic) -> the cube eats the heading left->right as it crosses. Latches gone so the later orbit can't reappear it. ----
+    // ---- WIPE (reversible): erase everything LEFT of the D&A cube's projected right wall, following the cube LIVE. So it eats the heading as you scroll into it AND wipes back in as you scroll back -> a missed read can be replayed. armP + heading-opacity gate keep it from firing before the cue or showing at a later cube (opacity is 0 by then). ----
     const daCube=cubes6.find(c=>c.userData.project.title==='Data & Analytics')||cubes6[2];
     const WIPE={armP:0.14, whw:0.92, lead:-60, fe:2, angle:90};   // live-tunable via #tune panel. armP: scroll where the wipe arms. whw: how far out the cube's right WALL is (×scale). lead: extra px shift right. fe: edge softness. angle: wipe-line tilt in deg (90 = vertical; lean to match the cube's diagonal).
     window.WIPE=WIPE;   // also reachable from the console
-    let b1Rect=null, b1Masked=false, wFront=null, wDone=false;
+    let b1Rect=null, b1Masked=false;
     const _mc=new THREE.Vector3(),_cam=new THREE.Vector3(),_mr=new THREE.Vector3(),_pr=new THREE.Vector3();
     const measureB1=()=>{ b1Rect=document.getElementById('beat-1').getBoundingClientRect(); };
     function setB1Mask(g){ const s=beats.b1.style; s.webkitMaskImage=g; s.maskImage=g; b1Masked=true; }
-    function clearB1Mask(reset){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } if(reset){ wFront=null; wDone=false; } }
+    function clearB1Mask(){ if(b1Masked){ const s=beats.b1.style; s.webkitMaskImage=''; s.maskImage=''; b1Masked=false; } }
     function updateOcclusion(p){
-      if((mode!=='CLUSTER'&&mode!=='EXITING')||p<WIPE.armP){ clearB1Mask(true); return; }             // out of scene, or before the cue / scrolled back -> full heading + reset (replays)
+      if((mode!=='CLUSTER'&&mode!=='EXITING')||p<WIPE.armP||parseFloat(beats.b1.style.opacity||0)<0.02){ clearB1Mask(); return; }   // before the cue / scrolled back before it / heading hidden -> full heading (reversible: no latch)
       if(!b1Rect)measureB1();
-      if(wDone||parseFloat(beats.b1.style.opacity||0)<0.02){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // wiped, or faded out past the cue -> STAY gone (can't reappear at a later cube)
       daCube.getWorldPosition(_mc);
       _cam.copy(_mc).applyMatrix4(camera.matrixWorldInverse);
-      if(_cam.z>=-0.15){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube behind us -> done
+      if(_cam.z>=-0.15){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // cube passed behind us -> fully wiped; scroll back brings it in front and it un-wipes
       _mr.setFromMatrixColumn(camera.matrixWorld,0);                                                  // camera-right -> aim at the cube's RIGHT WALL, not its near corner
       const fx=(_pr.copy(_mc).addScaledVector(_mr,WIPE.whw*daCube.scale.x).project(camera).x*0.5+0.5)*innerWidth-b1Rect.left+WIPE.lead;
-      wFront=wFront===null?fx:Math.max(wFront,fx);                                                    // high-water -> only ever sweeps right, never un-wipes
       const W=b1Rect.width||innerWidth, fe=WIPE.fe;
-      if(wFront>=W){ wDone=true; setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }   // swept fully across -> latch done
-      setB1Mask(`linear-gradient(${WIPE.angle}deg,transparent 0,transparent ${wFront-fe}px,#000 ${wFront+fe}px,#000 100%)`);   // erase LEFT of the cube (angle = wipe-line tilt)
+      if(fx<=-fe){ clearB1Mask(); return; }                                                          // cube fully left of the heading -> full heading
+      if(fx>=W+fe){ setB1Mask('linear-gradient(90deg,transparent,transparent)'); return; }          // cube fully past the right -> gone
+      setB1Mask(`linear-gradient(${WIPE.angle}deg,transparent 0,transparent ${fx-fe}px,#000 ${fx+fe}px,#000 100%)`);   // erase LEFT of the cube (angle = wipe-line tilt)
     }
     // ---- live WIPE tuner: open the site with #tune to drag the knobs and watch the wipe update; values persist (localStorage) so you can tell me the final numbers ----
     if(location.hash.toLowerCase().includes('tune')){
