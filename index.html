@@ -569,7 +569,7 @@
       let ctx=null,on=true,master=null;
       function init(){ if(ctx)return; const AC=window.AudioContext||window.webkitAudioContext; if(!AC)return;
         ctx=new AC(); master=ctx.createGain(); master.gain.value=on?0.16:0; master.connect(ctx.destination);
-        // PS2-style menu ambience: warm G6/9 MAJOR drone + voices gliding through the G-major pentatonic, reverb, slow breathing
+        // warm C#-minor ambience (Divine-Feminine / Rhodes vibe): C#m9 drone + soft EP motif (original phrase) + in-key glides, reverb, slow breathing
         const c=ctx;
         const imp=(dur,decay)=>{ const len=Math.floor(c.sampleRate*dur),b=c.createBuffer(2,len,c.sampleRate); for(let ch=0;ch<2;ch++){ const d=b.getChannelData(ch); for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay); } return b; };
         const out=c.createGain(); out.gain.value=0; out.connect(master);
@@ -577,27 +577,28 @@
         const bl=c.createOscillator(); bl.frequency.value=0.105; const bd=c.createGain(); bd.gain.value=0.28; bl.connect(bd); bd.connect(br.gain); bl.start();
         const conv=c.createConvolver(); conv.buffer=imp(4.2,2.2); const wet=c.createGain(); wet.gain.value=0.7; conv.connect(wet); wet.connect(br);
         const dry=c.createGain(); dry.gain.value=0.7; dry.connect(br);
-        const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1150; lp.Q.value=0.7; lp.connect(dry); lp.connect(conv);   // opened up -> brighter, airier, less muffled/ominous
+        const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1050; lp.Q.value=0.7; lp.connect(dry); lp.connect(conv);   // warm-but-present (Rhodes-ish)
         const flt=(rate,depth)=>{ const o=c.createOscillator(); o.frequency.value=rate; const gg=c.createGain(); gg.gain.value=depth; o.connect(gg); gg.connect(lp.frequency); o.start(); };
         flt(0.039,300); flt(0.0585,170);                                                                // two slow filter drifts
         const voice=(freq,type,gain,dr,dc)=>{ const o=c.createOscillator(); o.type=type; o.frequency.value=freq; const gg=c.createGain(); gg.gain.value=gain; o.connect(gg); gg.connect(lp); o.start();
           const dl=c.createOscillator(); dl.frequency.value=dr; const dd=c.createGain(); dd.gain.value=dc; dl.connect(dd); dd.connect(o.detune); dl.start(); };
-        voice(49,'sine',0.5,0.027,6); voice(49,'sine',0.5,0.033,9);                                     // detuned low drone (G1)
-        voice(98,'triangle',0.11,0.021,5); voice(123.47,'triangle',0.10,0.036,5); voice(146.83,'triangle',0.10,0.0255,6);  // G2 B2 (MAJOR 3rd) D3
-        voice(164.81,'triangle',0.085,0.03,5); voice(220.0,'sine',0.06,0.024,6);                        // E3 (6th) A3 (9th) -> G6/9 (warm major, not eerie)
-        const pent=[196.0,220.0,246.94,293.66,329.63,392.0,440.0,493.88];                               // G-MAJOR pentatonic (G A B D E) + an octave up (G A B) -> brighter, sparklier glides
+        voice(69.30,'sine',0.5,0.027,6); voice(69.30,'sine',0.5,0.033,9);                               // detuned low drone (C#2)
+        voice(138.59,'triangle',0.10,0.021,5); voice(164.81,'triangle',0.095,0.036,5); voice(207.65,'triangle',0.09,0.0255,6);  // C#3 E3 G#3 (C# minor triad)
+        voice(246.94,'sine',0.06,0.03,5); voice(311.13,'sine',0.05,0.024,6);                            // B3 (7th) D#4 (9th) -> C#m9 (warm, mellow)
+        const pent=[277.18,329.63,369.99,415.30,493.88];                                                // C#-minor pentatonic (C# E F# G# B), upper octave -> soft in-key glides
         const glide=(gain,interval,gT)=>{ let crf=pent[Math.floor(Math.random()*pent.length)]; const o=c.createOscillator(); o.type='sine'; o.frequency.value=crf; const gg=c.createGain(); gg.gain.value=gain; o.connect(gg); gg.connect(lp); o.start();
           const next=()=>{ const f=pent[Math.floor(Math.random()*pent.length)],n=c.currentTime; o.frequency.cancelScheduledValues(n); o.frequency.setValueAtTime(crf,n); o.frequency.exponentialRampToValueAtTime(f,n+gT); crf=f; setTimeout(next,(interval+Math.random()*interval)*1000); };
           setTimeout(next,800+Math.random()*1500); };
-        glide(0.085,4,2.8); glide(0.06,6,3.4); glide(0.04,7,3);                                         // three livelier in-key gliding voices (faster drift = more playful)
-        // soft ORIGINAL hummed motif (in-key warm phrase, not any specific song): a gentle arch that swells, breathes, and loops
-        { const mel=[196.0,220.0,246.94,293.66,329.63,293.66,246.94,220.0,null,246.94,293.66,329.63,392.0,329.63,null];  // G A B D E D B A _ B D E G E _
-          const o=c.createOscillator(); o.type='sine'; const gg=c.createGain(); gg.gain.value=0; o.connect(gg); gg.connect(lp); o.start(); let i=0;
-          const step=()=>{ const n=c.currentTime, f=mel[i%mel.length]; gg.gain.cancelScheduledValues(n); gg.gain.setValueAtTime(gg.gain.value,n);
-            if(f){ o.frequency.setValueAtTime(f,n); gg.gain.linearRampToValueAtTime(0.055,n+0.28); gg.gain.linearRampToValueAtTime(0.0,n+1.0); }   // each note hums in and fades (legato)
-            else { gg.gain.linearRampToValueAtTime(0.0,n+0.3); }                                          // null = breath/rest
-            i++; setTimeout(step,(f?900:1500)+Math.random()*220); };
-          setTimeout(step,2600); }
+        glide(0.05,5,3.5); glide(0.035,8,4.2);                                                          // two soft in-key glides, sitting under the EP motif
+        // soft Rhodes/EP motif (warm sine + a bell partial, slight reverb) playing Ryan's C#-minor lead at 70bpm half-time
+        { const ee=0.4286, phrase=[[329.63,1],[415.30,1],[329.63,1],[415.30,1],[311.13,1],[415.30,1],[277.18,2]];   // Ryan's line: E4 G#4 E4 G#4 D#4 G#4 (8ths) | C#4 (quarter), loop
+          const ep=(f,dur,vel)=>{ const t0=c.currentTime, o=c.createOscillator(),o2=c.createOscillator(),g=c.createGain(),g2=c.createGain();
+            o.type='sine'; o.frequency.value=f; o2.type='sine'; o2.frequency.value=f*2.01; o.connect(g); o2.connect(g2); g.connect(lp); g2.connect(lp);
+            g.gain.setValueAtTime(1e-4,t0); g.gain.linearRampToValueAtTime(vel,t0+0.012); g.gain.exponentialRampToValueAtTime(Math.max(1e-4,vel*0.45),t0+0.2); g.gain.exponentialRampToValueAtTime(1e-4,t0+dur);
+            g2.gain.setValueAtTime(1e-4,t0); g2.gain.linearRampToValueAtTime(vel*0.3,t0+0.006); g2.gain.exponentialRampToValueAtTime(1e-4,t0+0.22);   // bell ping (EP attack)
+            o.start(t0); o2.start(t0); o.stop(t0+dur+0.05); o2.stop(t0+0.3); };
+          let pi=0; const playStep=()=>{ const s=phrase[pi%phrase.length]; if(s[0]) ep(s[0], s[1]*ee+0.35, 0.075); pi++; setTimeout(playStep, s[1]*ee*1000); };
+          setTimeout(playStep,2800); }
         out.gain.linearRampToValueAtTime(0.5,c.currentTime+3.5); }
       function noise(d){ const b=ctx.createBuffer(1,ctx.sampleRate*d,ctx.sampleRate),a=b.getChannelData(0); for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1; return b; }
       return {
