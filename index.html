@@ -577,7 +577,7 @@
         const bl=c.createOscillator(); bl.frequency.value=0.105; const bd=c.createGain(); bd.gain.value=0.28; bl.connect(bd); bd.connect(br.gain); bl.start();
         const conv=c.createConvolver(); conv.buffer=imp(4.2,2.2); const wet=c.createGain(); wet.gain.value=0.7; conv.connect(wet); wet.connect(br);
         const dry=c.createGain(); dry.gain.value=0.7; dry.connect(br);
-        const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=900; lp.Q.value=0.7; lp.connect(dry); lp.connect(conv);   // opened up from 620 -> brighter, less muffled/ominous
+        const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1150; lp.Q.value=0.7; lp.connect(dry); lp.connect(conv);   // opened up -> brighter, airier, less muffled/ominous
         const flt=(rate,depth)=>{ const o=c.createOscillator(); o.frequency.value=rate; const gg=c.createGain(); gg.gain.value=depth; o.connect(gg); gg.connect(lp.frequency); o.start(); };
         flt(0.039,300); flt(0.0585,170);                                                                // two slow filter drifts
         const voice=(freq,type,gain,dr,dc)=>{ const o=c.createOscillator(); o.type=type; o.frequency.value=freq; const gg=c.createGain(); gg.gain.value=gain; o.connect(gg); gg.connect(lp); o.start();
@@ -585,11 +585,11 @@
         voice(49,'sine',0.5,0.027,6); voice(49,'sine',0.5,0.033,9);                                     // detuned low drone (G1)
         voice(98,'triangle',0.11,0.021,5); voice(123.47,'triangle',0.10,0.036,5); voice(146.83,'triangle',0.10,0.0255,6);  // G2 B2 (MAJOR 3rd) D3
         voice(164.81,'triangle',0.085,0.03,5); voice(220.0,'sine',0.06,0.024,6);                        // E3 (6th) A3 (9th) -> G6/9 (warm major, not eerie)
-        const pent=[196.0,220.0,246.94,293.66,329.63];                                                  // G-MAJOR pentatonic (G A B D E), upper octave -> cheerful glides
+        const pent=[196.0,220.0,246.94,293.66,329.63,392.0,440.0,493.88];                               // G-MAJOR pentatonic (G A B D E) + an octave up (G A B) -> brighter, sparklier glides
         const glide=(gain,interval,gT)=>{ let crf=pent[Math.floor(Math.random()*pent.length)]; const o=c.createOscillator(); o.type='sine'; o.frequency.value=crf; const gg=c.createGain(); gg.gain.value=gain; o.connect(gg); gg.connect(lp); o.start();
           const next=()=>{ const f=pent[Math.floor(Math.random()*pent.length)],n=c.currentTime; o.frequency.cancelScheduledValues(n); o.frequency.setValueAtTime(crf,n); o.frequency.exponentialRampToValueAtTime(f,n+gT); crf=f; setTimeout(next,(interval+Math.random()*interval)*1000); };
           setTimeout(next,800+Math.random()*1500); };
-        glide(0.08,5,3.5); glide(0.055,8,4.5);                                                          // two in-key gliding voices
+        glide(0.085,4,2.8); glide(0.06,6,3.4); glide(0.04,7,3);                                         // three livelier in-key gliding voices (faster drift = more playful)
         out.gain.linearRampToValueAtTime(0.5,c.currentTime+3.5); }
       function noise(d){ const b=ctx.createBuffer(1,ctx.sampleRate*d,ctx.sampleRate),a=b.getChannelData(0); for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1; return b; }
       return {
