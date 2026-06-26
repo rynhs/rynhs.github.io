@@ -590,6 +590,14 @@
           const next=()=>{ const f=pent[Math.floor(Math.random()*pent.length)],n=c.currentTime; o.frequency.cancelScheduledValues(n); o.frequency.setValueAtTime(crf,n); o.frequency.exponentialRampToValueAtTime(f,n+gT); crf=f; setTimeout(next,(interval+Math.random()*interval)*1000); };
           setTimeout(next,800+Math.random()*1500); };
         glide(0.085,4,2.8); glide(0.06,6,3.4); glide(0.04,7,3);                                         // three livelier in-key gliding voices (faster drift = more playful)
+        // soft ORIGINAL hummed motif (in-key warm phrase, not any specific song): a gentle arch that swells, breathes, and loops
+        { const mel=[196.0,220.0,246.94,293.66,329.63,293.66,246.94,220.0,null,246.94,293.66,329.63,392.0,329.63,null];  // G A B D E D B A _ B D E G E _
+          const o=c.createOscillator(); o.type='sine'; const gg=c.createGain(); gg.gain.value=0; o.connect(gg); gg.connect(lp); o.start(); let i=0;
+          const step=()=>{ const n=c.currentTime, f=mel[i%mel.length]; gg.gain.cancelScheduledValues(n); gg.gain.setValueAtTime(gg.gain.value,n);
+            if(f){ o.frequency.setValueAtTime(f,n); gg.gain.linearRampToValueAtTime(0.055,n+0.28); gg.gain.linearRampToValueAtTime(0.0,n+1.0); }   // each note hums in and fades (legato)
+            else { gg.gain.linearRampToValueAtTime(0.0,n+0.3); }                                          // null = breath/rest
+            i++; setTimeout(step,(f?900:1500)+Math.random()*220); };
+          setTimeout(step,2600); }
         out.gain.linearRampToValueAtTime(0.5,c.currentTime+3.5); }
       function noise(d){ const b=ctx.createBuffer(1,ctx.sampleRate*d,ctx.sampleRate),a=b.getChannelData(0); for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1; return b; }
       return {
