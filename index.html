@@ -585,12 +585,15 @@
           const dl=c.createOscillator(); dl.frequency.value=dr; const dd=c.createGain(); dd.gain.value=dc; dl.connect(dd); dd.connect(o.detune); dl.start(); };
         drone(103.83,0.34,0.027,6); drone(103.83,0.33,0.033,8);
         // VELVET: warm Rhodes G#m9 chord, soft re-strike every ~4.4s through the warm filter
-        const chord=[207.65,246.94,311.13,369.99,466.16];                                               // G#3 B3 D#4 F#4 A#4 = G#m9
-        const strike=(t)=>{ chord.forEach((f,i)=>{ const o=c.createOscillator(),o2=c.createOscillator(),eg=c.createGain(),o2g=c.createGain();
+        const chords=[ [207.65,246.94,311.13,369.99,466.16],   // G#m9  (G# B D# F# A#)
+                       [164.81,246.94,311.13,369.99,415.30],   // Emaj9 (E B D# F# G#)
+                       [138.59,164.81,207.65,246.94,311.13],   // C#m9  (C# E G# B D#)
+                       [184.99,233.08,277.18,329.63,415.30] ]; // F#9   (F# A# C# E G#)  -> i VI iv V, all diatonic to the key so it evolves but never clashes with the melody
+        const strike=(t,ch)=>{ ch.forEach((f,i)=>{ const o=c.createOscillator(),o2=c.createOscillator(),eg=c.createGain(),o2g=c.createGain();
           o.type='sine'; o.frequency.value=f; o2.type='sine'; o2.frequency.value=f*2.01; o2g.gain.value=0.22; o2.connect(o2g); o.connect(eg); o2g.connect(eg); eg.connect(lp);
           const a=t+i*0.045; eg.gain.setValueAtTime(1e-4,a); eg.gain.linearRampToValueAtTime(0.075,a+0.05); eg.gain.exponentialRampToValueAtTime(0.026,a+1.3); eg.gain.exponentialRampToValueAtTime(1e-4,a+3.6);
           o.start(a); o2.start(a); o.stop(a+3.8); o2.stop(a+3.8); }); };
-        const chordLoop=()=>{ strike(c.currentTime+0.05); setTimeout(chordLoop,4400); }; setTimeout(chordLoop,300);
+        let ci=0; const chordLoop=()=>{ strike(c.currentTime+0.05, chords[ci%chords.length]); ci++; setTimeout(chordLoop,4400); }; setTimeout(chordLoop,300);
         // GLASSY BELLS: Ryan's G#-minor lead on its own bright path; the LAST note alternates each loop (E4 / C#5) so it doesn't feel repetitive
         const epF=c.createBiquadFilter(); epF.type='lowpass'; epF.frequency.value=3400; epF.Q.value=0.4; epF.connect(dry); epF.connect(conv);
         const bell=(f,t,dur,vel)=>{ const o=c.createOscillator(),o2=c.createOscillator(),o3=c.createOscillator(),eg=c.createGain(),g2=c.createGain(),g3=c.createGain();
