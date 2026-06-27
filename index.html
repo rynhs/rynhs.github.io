@@ -598,9 +598,9 @@
           o.connect(eg); o2.connect(g2); g2.connect(eg); o3.connect(g3); g3.connect(eg); eg.connect(epF);
           eg.gain.setValueAtTime(1e-4,t); eg.gain.linearRampToValueAtTime(vel,t+0.008); eg.gain.exponentialRampToValueAtTime(1e-4,t+dur);
           o.start(t);o2.start(t);o3.start(t); o.stop(t+dur+0.05);o2.stop(t+dur+0.05);o3.stop(t+dur+0.05); };
-        { const ee=0.34, endA=329.63, endB=554.37, mel=[[415.30,1],[415.30,1],[493.88,1],[554.37,2],[493.88,1],[466.16,3],[0,2],[415.30,2],[369.99,1],[415.30,1],[329.63,4]], LAST=mel.length-1;   // G#4 G#4 B4 C#5 B4 A#4 (rest) G#4 F#4 G#4 [E4 / C#5]
+        { const ee=0.34, endA=329.63, endB=554.37, GAP=6, mel=[[415.30,1],[415.30,1],[493.88,1],[554.37,2],[493.88,1],[466.16,3],[0,2],[415.30,2],[369.99,1],[415.30,1],[329.63,4]], LAST=mel.length-1;   // G#4 G#4 B4 C#5 B4 A#4 (rest) G#4 F#4 G#4 [E4 / C#5]; GAP secs of quiet between loops so the bells are an occasional motif, not constant
           let pi=0, loops=0;
-          const playStep=()=>{ const idx=pi%mel.length, s=mel[idx]; let f=s[0]; if(idx===LAST) f=(loops%2===0)?endA:endB; if(f) bell(f, c.currentTime+0.03, s[1]*ee+1.2, 0.14); if(idx===LAST) loops++; pi++; setTimeout(playStep, s[1]*ee*1000); };
+          const playStep=()=>{ const idx=pi%mel.length, s=mel[idx]; let f=s[0]; if(idx===LAST) f=(loops%2===0)?endA:endB; if(f) bell(f, c.currentTime+0.03, s[1]*ee+1.2, 0.14); if(idx===LAST) loops++; pi++; setTimeout(playStep, (s[1]*ee+(idx===LAST?GAP:0))*1000); };
           setTimeout(playStep,900); }
         out.gain.linearRampToValueAtTime(0.5,c.currentTime+3.5); }
       function noise(d){ const b=ctx.createBuffer(1,ctx.sampleRate*d,ctx.sampleRate),a=b.getChannelData(0); for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1; return b; }
