@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Web Presence &amp; Branding — RYNH</title>
-<meta name="description" content="A site that earns the click and closes it. Fast, search-ready, and on-brand from logo to landing page, designed and built in one place so it looks sharp and actually converts." />
+<title>Web Presence &amp; Branding - RYNH</title>
+<meta name="description" content="A site that earns the click and closes it. Fast, search-ready, and on-brand from logo to landing page, designed and built in one place." />
 <meta name="author" content="RYNH" />
 <meta name="keywords" content="RYNH, technology consulting, business consulting, software consulting, business automation, custom software, data analytics, AI integration, digital strategy, IT consulting" />
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
@@ -16,16 +16,16 @@
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="RYNH" />
-<meta property="og:title" content="Web Presence &amp; Branding — RYNH" />
-<meta property="og:description" content="A site that earns the click and closes it. Fast, search-ready, and on-brand from logo to landing page, designed and built in one place so it looks sharp and actually converts." />
+<meta property="og:title" content="Web Presence &amp; Branding - RYNH" />
+<meta property="og:description" content="A site that earns the click and closes it. Fast, search-ready, and on-brand from logo to landing page, designed and built in one place." />
 <meta property="og:url" content="https://rynh.net/web-presence/" />
 <meta property="og:image" content="https://rynh.net/og.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:locale" content="en_CA" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Web Presence &amp; Branding — RYNH" />
-<meta name="twitter:description" content="A site that earns the click and closes it. Fast, search-ready, and on-brand from logo to landing page, designed and built in one place so it looks sharp and actually converts." />
+<meta name="twitter:title" content="Web Presence &amp; Branding - RYNH" />
+<meta name="twitter:description" content="A site that earns the click and closes it. Fast, search-ready, and on-brand from logo to landing page, designed and built in one place." />
 <meta name="twitter:image" content="https://rynh.net/og.png" />
 
 <script type="application/ld+json">
@@ -38,7 +38,7 @@
       "name": "RYNH",
       "url": "https://rynh.net/",
       "image": "https://rynh.net/og.png",
-      "logo": "https://rynh.net/og.png",
+      "logo": "https://rynh.net/rynh-icon.png",
       "slogan": "Your business, revolutionized.",
       "description": "RYNH is a technology and business consultancy. Our team advises then builds, custom software, automation, data systems, brand-ready web, and AI integrations, so growing businesses run faster and waste less.",
       "areaServed": "Worldwide",
@@ -55,12 +55,12 @@
         "@type": "OfferCatalog",
         "name": "Services",
         "itemListElement": [
-          {"@type":"Offer","itemOffered":{"@type":"Service","name":"Custom Software & Web Apps"}},
+          {"@type":"Offer","itemOffered":{"@type":"Service","name":"Custom Software & Apps"}},
           {"@type":"Offer","itemOffered":{"@type":"Service","name":"Business Automation"}},
           {"@type":"Offer","itemOffered":{"@type":"Service","name":"Data & Analytics"}},
           {"@type":"Offer","itemOffered":{"@type":"Service","name":"Web Presence & Branding"}},
           {"@type":"Offer","itemOffered":{"@type":"Service","name":"AI Integration"}},
-          {"@type":"Offer","itemOffered":{"@type":"Service","name":"Operations & Technical Strategy Consulting"}}
+          {"@type":"Offer","itemOffered":{"@type":"Service","name":"Strategy & Operations"}}
         ]
       }
     },
@@ -81,6 +81,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preload" href="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/autoshop_01_1k.hdr" as="fetch" crossorigin />
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Syncopate:wght@700&display=swap" rel="stylesheet" />
 
 <style>
@@ -108,11 +109,11 @@
   #stage canvas{display:block;width:100%;height:100%}
   #scroll-rig{position:relative;height:700vh;z-index:1;pointer-events:none}
 
-  .topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:flex-end;padding:18px 26px;pointer-events:none;transition:opacity .45s ease}
-  body.detail .topbar,body.detail #sound,body.detail .sidenav{opacity:0;pointer-events:none}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:flex-end;padding:18px 26px;pointer-events:none;transition:opacity .45s ease,visibility .45s}
+  body.detail .topbar,body.detail #sound,body.detail .sidenav{opacity:0;pointer-events:none;visibility:hidden}   /* visibility too, so the hidden chrome drops out of the Tab order */
   /* left-edge slide-out menu (replaces the RYNH wordmark dropdown; wordmark saved in REMOVED-CODE.md) */
-  .sidenav{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:20;display:flex;align-items:center;pointer-events:none;transition:opacity .45s ease}
-  /* glass tab — frosted, bright edges, inner sheen */
+  .sidenav{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:20;display:flex;align-items:center;pointer-events:none;transition:opacity .45s ease,visibility .45s}
+  /* glass tab: frosted, bright edges, inner sheen */
   .sidenav-tab{pointer-events:auto;display:flex;align-items:center;justify-content:center;width:34px;height:66px;cursor:pointer;position:relative;z-index:2;
     background:linear-gradient(135deg,rgba(190,225,255,.16),rgba(140,185,255,.05));border:1px solid rgba(200,230,255,.4);border-left:none;border-radius:0 16px 16px 0;
     backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);
@@ -128,9 +129,9 @@
     background:linear-gradient(150deg,rgba(34,52,76,.5),rgba(10,16,28,.64));
     backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);
     box-shadow:0 26px 64px rgba(0,0,0,.5),inset 0 1px 0 rgba(235,248,255,.28)}
-  .sidenav:hover .navmenu{opacity:1;visibility:visible;transform:translateY(-50%) translateX(0);pointer-events:auto}
+  .sidenav:hover .navmenu,.sidenav:focus-within .navmenu{opacity:1;visibility:visible;transform:translateY(-50%) translateX(0);pointer-events:auto}   /* :focus-within = keyboard path to the services */
   .navmenu li{opacity:0;transform:translateX(-9px);transition:opacity .3s ease,transform .34s cubic-bezier(.2,.85,.25,1)}
-  .sidenav:hover .navmenu li{opacity:1;transform:translateX(0);transition-delay:calc(55ms + var(--i,0)*42ms)}
+  .sidenav:hover .navmenu li,.sidenav:focus-within .navmenu li{opacity:1;transform:translateX(0);transition-delay:calc(55ms + var(--i,0)*42ms)}
   .navmenu button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;cursor:pointer;white-space:nowrap;
     padding:7px 8px;color:#9fb0c0;font:600 13px/1 "Space Grotesk",sans-serif;letter-spacing:.005em;
     text-shadow:0 1px 10px rgba(0,0,0,.75),0 1px 3px rgba(0,0,0,.6);transition:color .2s,transform .2s,letter-spacing .2s}
@@ -193,7 +194,7 @@
   #hover-label.show{opacity:1}
 
   #hint{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:7;color:var(--muted);font-size:12px;letter-spacing:.2em;text-transform:uppercase;transition:opacity .4s;pointer-events:none}
-  #sound{position:fixed;left:24px;bottom:22px;z-index:8;pointer-events:auto;background:none;border:none;color:var(--muted);font:500 12px/1 "Inter",sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:color .2s,opacity .45s ease}
+  #sound{position:fixed;left:24px;bottom:22px;z-index:8;pointer-events:auto;background:none;border:none;color:var(--muted);font:500 12px/1 "Inter",sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:color .2s,opacity .45s ease,visibility .45s}
   #sound:hover{color:var(--ink)}
 
   /* ---- bottom chapter scrubber (replaces the native browser scrollbar) ---- */
@@ -201,8 +202,8 @@
   html::-webkit-scrollbar,body::-webkit-scrollbar{width:0;height:0;display:none}  /* Chromium/Vivaldi/Safari */
   #prog{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:21;width:min(620px,88vw);
     display:flex;align-items:flex-end;gap:4px;padding:34px 0 14px;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;
-    transition:opacity .45s ease, transform .55s cubic-bezier(.2,.7,.2,1)}
-  body.detail #prog{opacity:0;pointer-events:none;transform:translate(-50%,170%)}     /* hide on a cube dive, like the rest of the chrome (keep it centered) */
+    transition:opacity .45s ease, transform .55s cubic-bezier(.2,.7,.2,1), visibility .45s}
+  body.detail #prog{opacity:0;pointer-events:none;transform:translate(-50%,170%);visibility:hidden}     /* hide on a cube dive, like the rest of the chrome (keep it centered) */
   .prog-seg{position:relative;flex:1 1 0;height:3px;min-width:2px;padding:0;border:0;cursor:inherit;border-radius:2px;   /* every cell equal width (flat, uniform gaps) */
     background:rgba(173,205,240,.18);transition:height .2s cubic-bezier(.2,.7,.2,1), background .2s ease}
   .prog-seg .fil{position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);border-radius:inherit;will-change:transform;
@@ -368,8 +369,8 @@
   <!--SEO:END-->
   </main>
   <!-- pronunciation cue: plays when the RYNH crystal is clicked. drop rin.mp3 next to this file. -->
-  <audio id="say-rin" src="rin.m4a" preload="auto" playsinline></audio>
-  <div id="loader">
+  <audio id="say-rin" src="/rin.m4a" preload="auto" playsinline></audio>   <!-- root-absolute: relative src 404'd on the /<slug>/ pages -->
+  <div id="loader" aria-hidden="true">
     <div class="rynh-stage">
       <svg class="rynh-svg" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet"><text x="300" y="100" text-anchor="middle" dominant-baseline="central" class="rynh-stroke">RYNH</text></svg>
       <div class="rynh-fill-wrap"><span class="rynh-fill">RYNH</span></div>
@@ -440,11 +441,11 @@
       <div class="ct-eye">Let's talk</div>
       <h3 id="ct-title">Let's build something.</h3>
       <p class="ct-sub">Tell us what you're working on. Replies usually within a day.</p>
-      <form id="ct-form" novalidate>
+      <form id="ct-form">
         <input class="ct-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <input type="text" name="name" placeholder="Your name" required autocomplete="name">
-        <input type="email" name="email" placeholder="Email" required autocomplete="email">
-        <textarea name="message" placeholder="What do you need built?" required></textarea>
+        <input type="text" name="name" placeholder="Your name" aria-label="Your name" required autocomplete="name">
+        <input type="email" name="email" placeholder="Email" aria-label="Email" required autocomplete="email">
+        <textarea name="message" placeholder="What do you need built?" aria-label="What do you need built?" required></textarea>
         <input type="hidden" name="source" id="ct-source" value="">
         <div class="ct-row">
           <button type="submit" class="btn btn-go ct-send">Send message →</button>
@@ -469,16 +470,16 @@
       <li>Web presence and branding</li>
       <li>AI integration</li>
       <li>Operations and technical strategy consulting</li>
-      <li><a href="mailto:ryan@rynh.net">Contact Ryan Hosseini</a></li>
+      <li><a href="mailto:ryan@rynh.net">Contact RYNH</a></li>
     </ul>
   </nav>
 
-  <noscript><style>#loader,#stage,#scroll-rig,.beat,#hint,#prog,#prog-tip{display:none!important}#fallback{display:block!important}</style></noscript>
+  <noscript><style>#loader,#stage,#scroll-rig,.beat,#hint,#prog,#prog-tip,#sound,.seo-page{display:none!important}#fallback{display:block!important}</style></noscript>   <!-- .seo-page too: without the opaque canvas it overlapped the fallback text -->
 
   <script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
     }
   }
@@ -514,13 +515,14 @@
   const fbGrid=document.getElementById('fallback-grid');
   SERVICES.forEach(s=>{ const d=document.createElement('div'); d.className='c';
     d.innerHTML=`<h3>${s.title}</h3><p>${s.blurb}</p>`; fbGrid.appendChild(d); });
+  document.querySelectorAll('.seo-page a').forEach(a=>a.tabIndex=-1);   // crawlable text stays in the a11y tree, but its invisible links leave the Tab order
   let loaderGone=false;
   function hideLoader(){ if(loaderGone)return; loaderGone=true;
     const wait=Math.max(0, 2300-performance.now());   // let one clean RYNH cycle play even on fast loads
     setTimeout(()=>{ document.getElementById('loader').classList.add('hide'); document.body.classList.add('ready'); }, wait); }   // .ready fires the hero entrance as the scene reveals
   function showFallback(){ hideLoader();
     document.getElementById('stage').style.display='none'; document.getElementById('scroll-rig').style.display='none';
-    document.querySelectorAll('.beat,#hint,#prog,#prog-tip').forEach(el=>el.style.display='none');
+    document.querySelectorAll('.beat,#hint,#prog,#prog-tip,#sound,.seo-page').forEach(el=>el.style.display='none');   // .seo-page: without the opaque canvas it overlaps the fallback text
     document.getElementById('fallback').classList.add('show'); }
 
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -531,19 +533,21 @@
   else { boot().catch(err=>{ console.error('3D init failed:',err); showFallback(); }); }
 
   async function boot(){
-    const THREE=await import('three');
-    const { RGBELoader }=await import('three/addons/loaders/RGBELoader.js');
-    const { FontLoader }=await import('three/addons/loaders/FontLoader.js');
-    const { TextGeometry }=await import('three/addons/geometries/TextGeometry.js');
-    const { ImprovedNoise }=await import('three/addons/math/ImprovedNoise.js');
-    const { RoundedBoxGeometry }=await import('three/addons/geometries/RoundedBoxGeometry.js');
-    const { mergeGeometries }=await import('three/addons/utils/BufferGeometryUtils.js');
-    const { EffectComposer }=await import('three/addons/postprocessing/EffectComposer.js');
-    const { RenderPass }=await import('three/addons/postprocessing/RenderPass.js');
-    const { UnrealBloomPass }=await import('three/addons/postprocessing/UnrealBloomPass.js');
-    const { BokehPass }=await import('three/addons/postprocessing/BokehPass.js');
-    const { ShaderPass }=await import('three/addons/postprocessing/ShaderPass.js');
-    const { OutputPass }=await import('three/addons/postprocessing/OutputPass.js');
+    // parallel fetch instead of a sequential await-waterfall (mergeGeometries import dropped: unused)
+    const [THREE,{ RGBELoader },{ FontLoader },{ TextGeometry },{ ImprovedNoise },{ RoundedBoxGeometry },
+           { EffectComposer },{ RenderPass },{ UnrealBloomPass },{ BokehPass },{ ShaderPass },{ OutputPass }]=await Promise.all([
+      import('three'),
+      import('three/addons/loaders/RGBELoader.js'),
+      import('three/addons/loaders/FontLoader.js'),
+      import('three/addons/geometries/TextGeometry.js'),
+      import('three/addons/math/ImprovedNoise.js'),
+      import('three/addons/geometries/RoundedBoxGeometry.js'),
+      import('three/addons/postprocessing/EffectComposer.js'),
+      import('three/addons/postprocessing/RenderPass.js'),
+      import('three/addons/postprocessing/UnrealBloomPass.js'),
+      import('three/addons/postprocessing/BokehPass.js'),
+      import('three/addons/postprocessing/ShaderPass.js'),
+      import('three/addons/postprocessing/OutputPass.js')]);
 
     const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
     const easeInOutCubic=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
@@ -753,7 +757,7 @@
         li.appendChild(b); navmenu.appendChild(li); });
       document.getElementById('sidenav').addEventListener('pointerleave',()=>{ navPick=null; }); }
     { const sb=document.getElementById('sound'),ss=document.getElementById('sound-state');
-      sb.addEventListener('click',()=>{ sfx.resume(); ss.textContent=sfx.toggle()?'On':'Off'; }); }
+      sb.addEventListener('click',()=>{ sfx.resume(); const on=sfx.toggle(); ss.textContent=on?'On':'Off'; sb.setAttribute('aria-pressed',String(on)); }); }
 
     const dustN=600,dpos=new Float32Array(dustN*3);
     for(let i=0;i<dustN;i++){ dpos[i*3]=(Math.random()-.5)*40; dpos[i*3+1]=(Math.random()-.5)*30; dpos[i*3+2]=(Math.random()-.5)*40; }
@@ -780,6 +784,7 @@
     let orbFade=0,orbSpread=0,coreHide=0; const orbTarget=new THREE.Vector3(),orbLead=new THREE.Vector3(),orbBehind=new THREE.Vector3();
     function burstOrbs(){ orbSpread=1; }                              // smooth bloom outward, eases back
     function updateOrbs(t){
+      if(reduce)return;   // orbs are pure decoration; sprites/trails start at opacity 0, so skipping keeps them invisible under prefers-reduced-motion
       // park orbs behind the camera during the RYNH dive-in + detail; release them slowly, starting the moment exit begins
       const wantHide=((dive&&dive.core&&dive.phase!=='out')||(mode==='DETAIL'&&lastCube&&lastCube.userData.isCore))?1:0;
       coreHide=lerp(coreHide,wantHide,0.025);                          // slow ease so the return isn't a snap
@@ -986,10 +991,6 @@
     function setInterior(cube,w){ const u=cube.userData; if(!u.interior)return;
       u.interior.walls.material.opacity=w;
       const c=new THREE.Vector3(); cube.getWorldPosition(c); chamberLight.position.copy(c); }  // intensity is paced separately so the lights can dim as we settle in
-    function camInsideness(cube){ const c=new THREE.Vector3(); cube.getWorldPosition(c);
-      const dist=Math.hypot(camState.x-c.x,camState.y-c.y,camState.z-c.z);
-      const rIn=cube.userData.isCore?0.55:0.38, rOut=cube.userData.isCore?1.25:0.62;
-      return clamp(1-(dist-rIn)/(rOut-rIn),0,1); }
     // empty the void as we dive so the background cuts off at the cube edges, not bleeding around it
     function setSceneDim(d){
       dust.material.opacity=0.5*(1-d);
@@ -1084,12 +1085,13 @@
     function openPanel(p){
       D.eye.textContent=p.kind; D.eye.style.color=p.accent; D.card.style.setProperty('--accent',p.accent); D.title.textContent=p.title; D.blurb.textContent=p.blurb;
       const src=(p.isCore?'RYNH / Ryan':p.title).replace(/"/g,'');
-      D.actions.innerHTML=`<button class="btn btn-go" data-contact="${src}">Let’s talk →</button><button class="btn btn-ghost" data-close>Back to the cluster</button>`;
+      D.actions.innerHTML=`<button class="btn btn-go" data-contact="${src}">Let's talk →</button><button class="btn btn-ghost" data-close>Back to the cluster</button>`;
       D.el.classList.add('is-open');
+      D.el.querySelector('.close').focus({preventScroll:true});   // move focus into the dialog for keyboard/SR users; Escape already exits
     }
     function closePanel(){ D.el.classList.remove('is-open'); D.card.style.transform=''; }
     D.el.addEventListener('click',e=>{ if(e.target.hasAttribute('data-close')) exitDive(); });
-    addEventListener('keydown',e=>{ if(e.key==='Escape'&&mode==='DETAIL') exitDive(); });
+    addEventListener('keydown',e=>{ if(e.key==='Escape'&&mode==='DETAIL'&&!document.getElementById('contact').classList.contains('is-open')) exitDive(); });   // when the contact modal sits on top, Escape closes only it
 
     // ---- contact: inline form posting to your own mailer, with book-a-call + email fallback ----
     const CONTACT_ENDPOINT='https://api.rynh.net/rynh-contact.php';
@@ -1106,12 +1108,12 @@
     CT.form.addEventListener('submit',async e=>{ e.preventDefault();
       if(CT.field('company').value){ closeContact(); return; }   // honeypot tripped -> silently drop
       const fd=new FormData(CT.form);
-      const mailto=()=>{ const body='From: '+(fd.get('name')||'')+' <'+(fd.get('email')||'')+'>\n\n'+(fd.get('message')||''); location.href='mailto:ryan@rynh.net?subject='+encodeURIComponent('RYNH inquiry — '+(fd.get('source')||''))+'&body='+encodeURIComponent(body); };
+      const mailto=()=>{ const body='From: '+(fd.get('name')||'')+' <'+(fd.get('email')||'')+'>\n\n'+(fd.get('message')||''); location.href='mailto:ryan@rynh.net?subject='+encodeURIComponent('RYNH inquiry - '+(fd.get('source')||''))+'&body='+encodeURIComponent(body); };
       if(!CONTACT_ENDPOINT){ mailto(); return; }                 // backend not wired yet -> open a prefilled email
       CT.send.disabled=true; CT.status.textContent='Sending…'; CT.status.className='ct-status sending';
       try{ const r=await fetch(CONTACT_ENDPOINT,{method:'POST',body:fd}); const j=await r.json().catch(()=>({})); if(!r.ok||!j.success) throw 0;
-        CT.status.textContent="Thanks — I'll be in touch shortly."; CT.status.className='ct-status ok'; CT.form.reset();
-      }catch(_){ CT.status.innerHTML='Couldn’t send right now. <a href="#" id="ct-mailto">Email me directly →</a>'; CT.status.className='ct-status err';
+        CT.status.textContent="Thanks, we'll be in touch shortly."; CT.status.className='ct-status ok'; CT.form.reset();
+      }catch(_){ CT.status.innerHTML='Couldn\'t send right now. <a href="#" id="ct-mailto">Email us directly →</a>'; CT.status.className='ct-status err';
         const m=document.getElementById('ct-mailto'); if(m)m.addEventListener('click',ev=>{ev.preventDefault();mailto();}); }
       finally{ CT.send.disabled=false; }
     });
@@ -1155,7 +1157,7 @@
       camera.updateMatrixWorld();   // ensure a valid world matrix before the orbs unproject through it (else first-frame NaN)
       setFocus(camera.position.distanceTo(new THREE.Vector3(camState.tx,camState.ty,camState.tz)));
 
-      if(!reduce){ const bobbing=(mode==='CLUSTER');   // bob ONLY in cluster; elsewhere ease to homeY. DAMPED follow (not a hard set) so the dived cube — whose chamber walls+shard are its children — never SNAPS its y when the fly-in stops and the card appears (that snap was the "jerk when the camera stops"). A 0.1Hz bob is slow enough the 0.12 lerp tracks it with no visible amplitude loss.
+      if(!reduce){ const bobbing=(mode==='CLUSTER');   // bob ONLY in cluster; elsewhere ease to homeY. DAMPED follow (not a hard set) so the dived cube (whose chamber walls+shard are its children) never SNAPS its y when the fly-in stops and the card appears (that snap was the "jerk when the camera stops"). A 0.1Hz bob is slow enough the 0.12 lerp tracks it with no visible amplitude loss.
         clickable.forEach(c=>{ if(c.userData.isCore)return; const u=c.userData;
           if(c===navPick && mode==='CLUSTER'){            // PRESENT: menu hover floats this cube toward the lens + glows it
             _presP.set(u.hx,u.homeY,u.hz); _toCam.copy(camera.position).sub(_presP); const dist=_toCam.length();
