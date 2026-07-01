@@ -110,7 +110,7 @@
 
   #stage{position:fixed;inset:0;z-index:0}
   #stage canvas{display:block;width:100%;height:100%}
-  #scroll-rig{position:relative;height:700vh;z-index:1;pointer-events:none}
+  #scroll-rig{position:relative;height:700vh;height:700dvh;z-index:1;pointer-events:none}   /* dvh: stable track length while the mobile address bar collapses */
 
   .topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:flex-end;padding:18px 26px;pointer-events:none;transition:opacity .45s ease,visibility .45s}
   body.detail .topbar,body.detail #sound,body.detail .sidenav{opacity:0;pointer-events:none;visibility:hidden}   /* visibility too, so the hidden chrome drops out of the Tab order */
@@ -124,7 +124,7 @@
     color:#eaf6ff;transition:width .25s,background .25s,box-shadow .25s}
   .sidenav .chev{font-size:20px;line-height:1;font-weight:600;opacity:.85;text-shadow:0 0 10px rgba(143,220,255,.6);transition:transform .32s cubic-bezier(.2,.85,.25,1),opacity .2s}
   .sidenav:hover .sidenav-tab{width:38px;background:linear-gradient(135deg,rgba(200,232,255,.24),rgba(150,195,255,.09));box-shadow:8px 0 38px rgba(0,0,0,.46),inset 0 1px 0 rgba(235,248,255,.6),inset -1px 0 0 rgba(190,225,255,.32)}
-  .sidenav:hover .chev{transform:rotate(180deg);opacity:1}
+  .sidenav:hover .chev,.sidenav.open .chev{transform:rotate(180deg);opacity:1}
   /* floating glass card next to the tab (all corners rounded -> no clipped seam; frosted so the hero reads as backdrop); labels float their cube on hover */
   .navmenu{list-style:none;margin:0;padding:16px 20px;position:absolute;left:calc(100% + 10px);top:50%;min-width:216px;
     opacity:0;visibility:hidden;transform:translateY(-50%) translateX(-12px);transition:opacity .28s,transform .32s cubic-bezier(.2,.85,.25,1),visibility .28s;pointer-events:none;
@@ -132,9 +132,9 @@
     background:linear-gradient(150deg,rgba(34,52,76,.5),rgba(10,16,28,.64));
     backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);
     box-shadow:0 26px 64px rgba(0,0,0,.5),inset 0 1px 0 rgba(235,248,255,.28)}
-  .sidenav:hover .navmenu,.sidenav:focus-within .navmenu{opacity:1;visibility:visible;transform:translateY(-50%) translateX(0);pointer-events:auto}   /* :focus-within = keyboard path to the services */
+  .sidenav:hover .navmenu,.sidenav:focus-within .navmenu,.sidenav.open .navmenu{opacity:1;visibility:visible;transform:translateY(-50%) translateX(0);pointer-events:auto}   /* :focus-within = keyboard path; .open = touch path (iOS :hover is unreliable) */
   .navmenu li{opacity:0;transform:translateX(-9px);transition:opacity .3s ease,transform .34s cubic-bezier(.2,.85,.25,1)}
-  .sidenav:hover .navmenu li,.sidenav:focus-within .navmenu li{opacity:1;transform:translateX(0);transition-delay:calc(55ms + var(--i,0)*42ms)}
+  .sidenav:hover .navmenu li,.sidenav:focus-within .navmenu li,.sidenav.open .navmenu li{opacity:1;transform:translateX(0);transition-delay:calc(55ms + var(--i,0)*42ms)}
   .navmenu button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;cursor:pointer;white-space:nowrap;
     padding:7px 8px;color:#9fb0c0;font:600 13px/1 "Space Grotesk",sans-serif;letter-spacing:.005em;
     text-shadow:0 1px 10px rgba(0,0,0,.75),0 1px 3px rgba(0,0,0,.6);transition:color .2s,transform .2s,letter-spacing .2s}
@@ -193,7 +193,7 @@
     text-shadow:0 1px 8px rgba(0,0,0,.4);transition:transform .15s,border-color .2s,background .2s}
   .gpill:hover,#beat-contact .cta:hover{transform:translateY(-2px);border-color:rgba(190,225,255,.7);background:linear-gradient(150deg,rgba(170,215,255,.32),rgba(130,180,240,.14))}
 
-  #hover-label{position:fixed;z-index:8;pointer-events:none;transform:translate(-50%,-160%);opacity:0;transition:opacity .18s;font-family:"Space Grotesk";font-weight:600;font-size:14px;letter-spacing:.02em;background:rgba(8,14,22,.7);border:1px solid var(--line);padding:6px 12px;border-radius:999px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);white-space:nowrap}
+  #hover-label{position:fixed;z-index:8;pointer-events:none;transform:translate(-50%,-160%);opacity:0;transition:opacity .18s;font-family:"Space Grotesk";font-weight:600;font-size:14px;letter-spacing:.02em;background:rgba(8,14,22,.7);border:1px solid var(--line);padding:6px 12px;border-radius:999px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}   /* same glass sheen as the other chrome */
   #hover-label.show{opacity:1}
 
   #hint{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:7;color:var(--muted);font-size:12px;letter-spacing:.2em;text-transform:uppercase;transition:opacity .4s;pointer-events:none}
@@ -213,8 +213,8 @@
     background:linear-gradient(90deg, rgba(130,205,242,.9), #c7ecff);box-shadow:0 0 8px rgba(143,220,255,.5)}
   .prog-seg.on{height:5px;background:rgba(180,215,250,.24)}   /* the whole chapter (About / the 6 services / Contact) lifts as you pass through it */
   .prog-seg.cur{height:7px}
-  .prog-seg:hover{height:8px;background:rgba(200,230,255,.32)}
-  .prog-seg.cur .fil,.prog-seg:hover .fil{box-shadow:0 0 13px rgba(143,220,255,.85), 0 0 3px rgba(225,247,255,.95)}
+  .prog-seg:hover,.prog-seg:focus-visible{height:8px;background:rgba(200,230,255,.32)}   /* keyboard focus gets the same lift as hover (an outline ring on a 3px sliver is unreadable) */
+  .prog-seg.cur .fil,.prog-seg:hover .fil,.prog-seg:focus-visible .fil{box-shadow:0 0 13px rgba(143,220,255,.85), 0 0 3px rgba(225,247,255,.95)}
   /* per-section labels: hidden at rest, revealed while scrubbing so you can see every section you're sliding through */
   .prog-lbl{position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%) translateY(5px);white-space:nowrap;pointer-events:none;opacity:0;
     font:600 9.5px/1 "Space Grotesk",sans-serif;letter-spacing:.13em;text-transform:uppercase;color:rgba(205,230,255,.9);text-shadow:0 1px 8px rgba(0,0,0,.6);
@@ -232,13 +232,14 @@
     -webkit-backdrop-filter:blur(11px) saturate(150%);backdrop-filter:blur(11px) saturate(150%);
     transition:opacity .16s ease, transform .16s ease}
   #prog-tip.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (prefers-reduced-transparency:reduce){ .prog-seg{background:rgba(40,54,76,.9)} #prog-tip{background:#0e1722} }
+  @media (prefers-reduced-transparency:reduce){ .prog-seg{background:rgba(40,54,76,.9)} #prog-tip{background:#0e1722}
+    .sidenav-tab{background:#131b28;backdrop-filter:none;-webkit-backdrop-filter:none} .navmenu{background:#0e1520;backdrop-filter:none;-webkit-backdrop-filter:none} }   /* the side menu joins the other glass surfaces' solid fallback */
 
   /* "inside the cube" reveal: a frosted pane floating in the chamber, not a page */
   #detail{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;perspective:1100px}
   #detail.is-open{opacity:1;visibility:visible}
   #detail .scrim{position:absolute;inset:0;background:radial-gradient(135% 110% at 50% 50%, transparent 52%, rgba(4,7,12,.5) 100%)}
-  #detail .card{position:relative;isolation:isolate;box-sizing:border-box;width:min(540px,100%);padding:40px;border-radius:14px;overflow:hidden;color:#fff;will-change:transform;
+  #detail .card{position:relative;isolation:isolate;box-sizing:border-box;width:min(540px,100%);padding:40px;border-radius:14px;overflow:hidden;overflow-y:auto;max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);color:#fff;will-change:transform;   /* scrolls instead of trapping the buttons off-screen on short/landscape phones */
     background:
       linear-gradient(140deg, color-mix(in srgb, var(--accent,#8fb6ff) 20%, transparent), transparent 44%),
       linear-gradient(140deg, rgba(255,255,255,.12), rgba(255,255,255,0) 30%),
@@ -282,7 +283,7 @@
   #contact{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px}
   #contact.is-open{display:flex}
   #contact .scrim{position:absolute;inset:0;background:rgba(4,6,12,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-  #contact .ct-card{position:relative;width:min(440px,100%);border-radius:18px;padding:30px 30px 24px;color:#eaf2ff;
+  #contact .ct-card{position:relative;width:min(440px,100%);border-radius:18px;padding:30px 30px 24px;color:#eaf2ff;max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);overflow-y:auto;   /* keyboard-open phones: form scrolls, submit stays reachable */
     background:linear-gradient(160deg,color-mix(in srgb,#8fdcff 15%,transparent),rgba(13,17,26,.74));
     border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 70px -24px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.18);
     -webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%)}
@@ -293,9 +294,10 @@
   #contact .ct-sub{margin:0 0 20px;font-size:14px;line-height:1.55;color:rgba(255,255,255,.66)}
   #contact form{display:flex;flex-direction:column;gap:11px}
   #contact .ct-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
-  #contact input,#contact textarea{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;font:inherit;font-size:14px;color:#fff;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);transition:border-color .18s,background .18s}
+  #contact input,#contact textarea{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;font:inherit;font-size:14px;color:#fff;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);transition:border-color .18s,background .18s;caret-color:#8fdcff}
   #contact input::placeholder,#contact textarea::placeholder{color:rgba(255,255,255,.4)}
   #contact input:focus,#contact textarea:focus{outline:none;border-color:#8fdcff;background:rgba(143,220,255,.08)}
+  #contact input:user-invalid,#contact textarea:user-invalid{border-color:#ff9bb0}   /* failed native validation in the site's coral, not the UA red */
   #contact textarea{resize:vertical;min-height:92px}
   #contact .ct-row{display:flex;gap:10px;margin-top:4px}
   #contact .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 20px;font-size:14px;font-weight:600;border-radius:10px;cursor:pointer;border:1px solid transparent;text-decoration:none;transition:transform .15s,box-shadow .18s,background .18s}
@@ -433,6 +435,7 @@
       <div class="eyebrow" id="d-eyebrow"></div>
       <h3 id="d-title"></h3>
       <p class="blurb" id="d-blurb"></p>
+      <div class="tags" id="d-tags"></div>
       <div class="actions" id="d-actions"></div>
     </div>
   </div>
@@ -455,7 +458,7 @@
           <a class="btn btn-ghost ct-call" id="ct-call" href="#" target="_blank" rel="noopener">Book a call</a>
         </div>
         <p class="ct-status" id="ct-status" role="status" aria-live="polite"></p>
-        <p class="ct-note">or email <a href="mailto:ryan@rynh.net">ryan@rynh.net</a></p>
+        <p class="ct-note">or email <a href="mailto:ryan@rynh.net">ryan@rynh.net</a><br>We only use your details to reply. Nothing else.</p>
       </form>
     </div>
   </div>
@@ -749,16 +752,19 @@
 
     // left slide-out menu -> hovering a label floats that service's ACTUAL cube forward in the scene; click dives in
     let navPick=null; const _presP=new THREE.Vector3(),_toCam=new THREE.Vector3();
-    { const navmenu=document.getElementById('navmenu');
+    { const navmenu=document.getElementById('navmenu'), sn=document.getElementById('sidenav'), snTab=sn.querySelector('.sidenav-tab');
+      const snClose=()=>{ sn.classList.remove('open'); snTab.setAttribute('aria-expanded','false'); };
       SERVICES.forEach((s,i)=>{ const cube=clickable[i+1];
         const li=document.createElement('li'); li.style.setProperty('--i',i);
         const b=document.createElement('button'); b.style.setProperty('--c',s.accent);
         b.innerHTML='<span class="tick"></span>'+s.title;
         b.addEventListener('pointerenter',()=>{ if(mode==='CLUSTER'){ navPick=cube; sfx.resume(); sfx.hover(); } });   // same hover ding as the cubes
         b.addEventListener('pointerleave',()=>{ if(navPick===cube) navPick=null; });
-        b.addEventListener('click',()=>{ if(mode==='CLUSTER'){ cube.position.set(cube.userData.hx,cube.userData.homeY,cube.userData.hz); cube.scale.setScalar(1); navPick=null; diveInto(cube); } });
+        b.addEventListener('click',()=>{ if(mode==='CLUSTER'){ cube.position.set(cube.userData.hx,cube.userData.homeY,cube.userData.hz); cube.scale.setScalar(1); navPick=null; snClose(); diveInto(cube); } });
         li.appendChild(b); navmenu.appendChild(li); });
-      document.getElementById('sidenav').addEventListener('pointerleave',()=>{ navPick=null; }); }
+      snTab.setAttribute('aria-expanded','false');
+      snTab.addEventListener('click',()=>{ const o=sn.classList.toggle('open'); snTab.setAttribute('aria-expanded',String(o)); sfx.resume(); });   // tap path: iOS :hover on a non-link is unreliable, so touch gets a real toggle
+      sn.addEventListener('pointerleave',()=>{ navPick=null; snClose(); }); }
     { const sb=document.getElementById('sound'),ss=document.getElementById('sound-state');
       sb.addEventListener('click',()=>{ sfx.resume(); const on=sfx.toggle(); ss.textContent=on?'On':'Off'; sb.setAttribute('aria-pressed',String(on)); }); }
 
@@ -1086,9 +1092,10 @@
       if(k>=1){ if(dive.phase==='in'){ const c=dive.cube; dive=null; finishIn(c); } else { dive=null; finishOut(); } }
     }
 
-    const D={el:document.getElementById('detail'),card:document.querySelector('#detail .card'),eye:document.getElementById('d-eyebrow'),title:document.getElementById('d-title'),blurb:document.getElementById('d-blurb'),actions:document.getElementById('d-actions')};
+    const D={el:document.getElementById('detail'),card:document.querySelector('#detail .card'),eye:document.getElementById('d-eyebrow'),title:document.getElementById('d-title'),blurb:document.getElementById('d-blurb'),tags:document.getElementById('d-tags'),actions:document.getElementById('d-actions')};
     function openPanel(p){
       D.eye.textContent=p.kind; D.eye.style.color=p.accent; D.card.style.setProperty('--accent',p.accent); D.title.textContent=p.title; D.blurb.textContent=p.blurb;
+      D.tags.innerHTML=(p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');   // the capability chips already in SERVICES data (CSS existed, was only used by the no-JS fallback)
       const src=(p.isCore?'RYNH / Ryan':p.title).replace(/"/g,'');
       D.actions.innerHTML=`<button class="btn btn-go" data-contact="${src}">Let's talk →</button><button class="btn btn-ghost" data-close>Back to the cluster</button>`;
       D.el.classList.add('is-open');
@@ -1131,10 +1138,13 @@
       const hit=raycaster.intersectObjects(clickable,false)[0]; if(hit) diveInto(hit.object);
     });
 
+    let rzW=innerWidth,rzH=innerHeight;
     addEventListener('resize',()=>{
       camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
       renderer.setSize(innerWidth,innerHeight);
       composer&&composer.setSize(innerWidth,innerHeight); bloom&&bloom.setSize(innerWidth,innerHeight);
+      if(innerWidth===rzW&&Math.abs(innerHeight-rzH)<120){ rzH=innerHeight; return; }   // mobile address-bar churn: keep the render sharp but skip rebuilding the tour every few px
+      rzW=innerWidth; rzH=innerHeight;
       buildTour();   // re-fit the orbit to the new aspect (portrait pull-back)
     });
 
