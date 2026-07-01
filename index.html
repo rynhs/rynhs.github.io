@@ -915,6 +915,7 @@
     function warp(p){ const A=[[0,0],[0.09,1/9],[0.44,2/9],[0.88,8/9],[0.94,8/9],[1,1]];     // SLOW the RYNH->first-cube band (scroll 0.09-0.44 = long read window before D&A); DWELL at contact (0.88-0.94, u flat) so the CTA is readable; 0.94-1 glides home for the loop
       for(let i=1;i<A.length;i++){ if(p<=A[i][0]){ const t=(p-A[i-1][0])/(A[i][0]-A[i-1][0]); return A[i-1][1]+t*(A[i][1]-A[i-1][1]); } } return 1; }
     function clusterCam(p){
+      if(p<0)p+=1;   // wrap catch-up: negative smooth = still finishing the return-home glide (pose(u=1) == pose(u=0), so crossing 0 is seamless)
       const u=warp(clamp(p,0,1));
       posCurve.getPoint(u,tmpP); tgtCurve.getPoint(u,tmpT);
       const n=tourCubes.length, np=n+4, idx=Math.round(u*(np-1));          // control pts: 0=hero, 1=RYNH, 2..n+1=cubes, n+2=contact, n+3=home (loop)
@@ -1146,7 +1147,8 @@
       requestAnimationFrame(tick);
       const t=clock.getElapsedTime();
       if(mode==='CLUSTER'){ smooth=reduce?targetP:lerp(smooth,targetP,0.06);
-        if(targetP>=1&&smooth>0.995&&!dragging){ scrollTo(0,0); targetP=0; smooth=0; }   // LOOP: once the camera settles at the end (pose == hero pose), wrap the scroll to the top; no visual jump because the spline is closed
+        if(targetP>=1&&!dragging){ scrollTo(0,0); targetP=0; smooth-=1; }   // LOOP: wrap the scroll the moment the bottom is hit; smooth goes negative and keeps gliding the rest of the return leg (clusterCam samples p+1), landing on the hero pose with no snap
+        if(smooth<0&&smooth>-1e-4) smooth=0;   // kill the asymptote so the scrubber/hint settle on slide 0, not "just before it"
         clusterCam(smooth);
         camState.x=tmpP.x;camState.y=tmpP.y;camState.z=tmpP.z;camState.tx=tmpT.x;camState.ty=tmpT.y;camState.tz=tmpT.z;
         clusterVel.vP.set(camState.x-camPrev.x,camState.y-camPrev.y,camState.z-camPrev.z);   // per-frame glide delta (pos + gaze) -> seeds the dive's starting velocity so entering a cube is C1-continuous (no jerk-from-rest)
@@ -1186,8 +1188,9 @@
       dust.rotation.y=t*0.01;
       updateOrbs(t);
       if(grade){ grade.uniforms.t.value=t; if(!dive) grade.uniforms.uTrans.value=0; }
-      if(mode==='CLUSTER'||mode==='EXITING') updateCaptions(smooth);   // fade the captions back in DURING the exit (CSS-eased) instead of popping them at the end
-      updateProg(dragging?scrubP:smooth);   // while scrubbing the fill tracks the cursor; otherwise the eased scroll (hidden via body.detail during a dive)
+      const dispP=smooth<0?smooth+1:smooth;   // captions/scrubber read the same wrapped position the camera is at
+      if(mode==='CLUSTER'||mode==='EXITING') updateCaptions(dispP);   // fade the captions back in DURING the exit (CSS-eased) instead of popping them at the end
+      updateProg(dragging?scrubP:dispP);   // while scrubbing the fill tracks the cursor; otherwise the eased scroll (hidden via body.detail during a dive)
 
       composer?composer.render():renderer.render(scene,camera);
       if(firstFrame){ firstFrame=false; setTimeout(hideLoader,4000); }
