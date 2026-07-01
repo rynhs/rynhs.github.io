@@ -39,12 +39,20 @@ const enc = s => esc(s).replace(/"/g,'&quot;');
 function build(p){
   const pageTitle = p.slug === 'about' ? p.title : `${p.title} - RYNH`, url = `${SITE}/${p.slug}/`;   // about already contains the brand; hyphen, never an em dash
   const related = PAGES.filter(x => x.slug !== p.slug);
+  // per-page Service JSON-LD (inside the SEO block, so each page carries its own; about keeps just the shared Organization graph)
+  const serviceLd = p.slug === 'about' ? '' : `
+    <script type="application/ld+json">${JSON.stringify({
+      '@context': 'https://schema.org', '@type': 'Service',
+      name: p.title, description: p.desc, url,
+      provider: { '@id': 'https://rynh.net/#rynh' }, areaServed: 'Worldwide',
+    })}<\/script>`;
   const seo = `
     <h1>${esc(p.title)}</h1>
     <p>${esc(p.blurb)}</p>
     <p><a href="mailto:ryan@rynh.net?subject=Let's%20talk">Let's talk about your project</a> or <a href="/">explore the studio</a>.</p>
     <h2>More from RYNH</h2>
     <ul>${related.map(r => `<li><a href="/${r.slug}/">${esc(r.title)}</a></li>`).join('')}</ul>
+    <p>© 2026 RYNH &middot; Vancouver, BC</p>${serviceLd}
   `;
   let out = html
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${enc(pageTitle)}</title>`)

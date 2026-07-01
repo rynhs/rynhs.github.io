@@ -80,7 +80,7 @@
 <link rel="preconnect" href="https://dl.polyhaven.org" crossorigin />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="preload" href="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/autoshop_01_1k.hdr" as="fetch" crossorigin />
+<link rel="preload" href="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/autoshop_01_1k.hdr" as="fetch" crossorigin media="(pointer: fine)" /><!-- desktop only: mobile uses a procedural environment instead of the 1.6MB HDRI -->
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Syncopate:wght@700&display=swap" rel="stylesheet" />
 
@@ -184,6 +184,11 @@
   #beat-contact h2{font-family:"Space Grotesk";font-weight:700;font-size:clamp(30px,6vw,60px);margin:0;
     background:linear-gradient(100deg,#79cdf3 0%,#d6f1ff 40%,#8fdcff 64%,#c4ebff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
     filter:drop-shadow(0 2px 30px rgba(120,195,255,.42)) drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+  #beat-contact .steps{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;padding:0 20px;
+    font:600 12.5px/1.5 "Space Grotesk",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#b9cede;text-shadow:0 1px 10px rgba(0,0,0,.65)}
+  #beat-contact .steps .sep{color:var(--accent);opacity:.65;letter-spacing:0}
+  #beat-contact .ct-wrap{display:flex;flex-direction:column;align-items:center}
+  #beat-contact .foot{margin:20px 0 0;font-size:12px;letter-spacing:.06em;color:var(--muted);text-shadow:0 1px 8px rgba(0,0,0,.6)}
   /* glass pill */
   .gpill,#beat-contact .cta{pointer-events:auto;display:inline-flex;gap:8px;align-items:center;padding:13px 24px;border-radius:999px;font-weight:600;font-size:14px;text-decoration:none;cursor:pointer;
     color:#eaf6ff;border:1px solid rgba(190,225,255,.4);
@@ -371,6 +376,8 @@
     <p><a href="mailto:ryan@rynh.net?subject=Let's%20talk">Let's talk about your project</a> or <a href="/">explore the studio</a>.</p>
     <h2>More from RYNH</h2>
     <ul><li><a href="/custom-software/">Custom Software &amp; Apps</a></li><li><a href="/data-analytics/">Data &amp; Analytics</a></li><li><a href="/web-presence/">Web Presence &amp; Branding</a></li><li><a href="/ai-integration/">AI Integration</a></li><li><a href="/strategy/">Strategy &amp; Operations</a></li><li><a href="/about/">About RYNH</a></li></ul>
+    <p>© 2026 RYNH &middot; Vancouver, BC</p>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Service","name":"Business Automation","description":"We map the process, then build the automation that runs it, so errors drop and hours come back. One build lifted accuracy 20% across 1,000+ shipments.","url":"https://rynh.net/automation/","provider":{"@id":"https://rynh.net/#rynh"},"areaServed":"Worldwide"}</script>
   <!--SEO:END-->
   </main>
   <!-- pronunciation cue: plays when the RYNH crystal is clicked. drop rin.mp3 next to this file. -->
@@ -403,7 +410,11 @@
   <div class="beat mid" id="beat-2"><div class="inner"><h2>Engineering that reads the business.</h2><p>Most shops build exactly what you spec. RYNH builds what the operation actually needs, because it understands how you run.</p></div></div>
   <div class="beat" id="beat-contact">
     <h2>What should we build first?</h2>
-    <a class="cta" href="mailto:ryan@rynh.net?subject=Project%20inquiry" data-contact="Contact section">Let's talk →</a>
+    <div class="steps" aria-label="How we work"><span>Discovery call</span><span class="sep">→</span><span>Scoped plan</span><span class="sep">→</span><span>Build</span><span class="sep">→</span><span>Ship + support</span></div>
+    <div class="ct-wrap">
+      <a class="cta" href="mailto:ryan@rynh.net?subject=Project%20inquiry" data-contact="Contact section">Let's talk →</a>
+      <p class="foot">© 2026 RYNH · Vancouver, BC</p>
+    </div>
   </div>
 
   <div id="hint">Scroll ↓</div>
@@ -467,6 +478,7 @@
     <h1>Your business, <em>revolutionized</em>.</h1>
     <p class="lead">RYNH is a software and business studio led by director Ryan Hosseini, BBA in Management Information Systems and Operations Management from SFU's Beedie School of Business. Here is what we build.</p>
     <div class="grid" id="fallback-grid"></div>
+    <p class="foot" style="margin-top:48px;color:var(--muted);font-size:13px">© 2026 RYNH · Vancouver, BC</p>
   </main>
   <nav class="sr-only" aria-label="Services and contact">
     <ul>
@@ -643,11 +655,17 @@
       const bg=new THREE.CanvasTexture(cv); bg.colorSpace=THREE.SRGBColorSpace; scene.background=bg; }
 
     // HDRI environment = the biggest visual win for glass. Loads async; graceful fallback.
-    const pmrem=new THREE.PMREMGenerator(renderer); pmrem.compileEquirectangularShader();
-    new RGBELoader().load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/autoshop_01_1k.hdr',
-      hdr=>{ hdr.mapping=THREE.EquirectangularReflectionMapping; scene.environment=pmrem.fromEquirectangular(hdr).texture; hdr.dispose(); pmrem.dispose(); hideLoader(); },
-      undefined,
-      ()=>{ scene.environment=null; hideLoader(); });
+    const pmrem=new THREE.PMREMGenerator(renderer);
+    if(isMobile){   // phones: skip the 1.6MB HDRI download; procedural studio env, zero network cost (slightly different reflections, feel-check on a real phone)
+      const { RoomEnvironment }=await import('three/addons/environments/RoomEnvironment.js');
+      scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture; pmrem.dispose(); hideLoader();
+    } else {
+      pmrem.compileEquirectangularShader();
+      new RGBELoader().load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/autoshop_01_1k.hdr',
+        hdr=>{ hdr.mapping=THREE.EquirectangularReflectionMapping; scene.environment=pmrem.fromEquirectangular(hdr).texture; hdr.dispose(); pmrem.dispose(); hideLoader(); },
+        undefined,
+        ()=>{ scene.environment=null; hideLoader(); });
+    }
 
     // procedural frost normal map -> "actually frozen" crystalline surface
     function frostNormal(size=512){
@@ -976,8 +994,13 @@
     const label=document.getElementById('hover-label');
     addEventListener('pointermove',e=>{ ndc.x=(e.clientX/innerWidth)*2-1; ndc.y=-(e.clientY/innerHeight)*2+1; pointerInside=true; },{passive:true});
     addEventListener('pointerleave',()=>pointerInside=false);
+    const placeLabel=obj=>{ const w=new THREE.Vector3(); obj.getWorldPosition(w); w.project(camera);
+      label.textContent=obj.userData.isCore?'About Us':obj.userData.project.title;
+      label.style.left=((w.x*0.5+0.5)*innerWidth)+'px'; label.style.top=((-w.y*0.5+0.5)*innerHeight)+'px'; label.classList.add('show'); };
     function updateHover(){
-      if(navPick){ if(hovered){hovered=null;document.body.style.cursor='';} label.classList.remove('show'); return; }   // menu is presenting a cube -> the nav float/glow owns the cubes, skip raycast hover
+      if(navPick){ if(hovered){hovered=null;document.body.style.cursor='';}
+        if(isMobile) placeLabel(navPick); else label.classList.remove('show');   // touch: the armed cube keeps its name label up (two-tap dive); desktop menu hover keeps the label off (the menu item is the label)
+        return; }   // menu is presenting a cube -> the nav float/glow owns the cubes, skip raycast hover
       let hit=null;
       if(pointerInside){ raycaster.setFromCamera(ndc,camera); hit=raycaster.intersectObjects(clickable,false)[0]?.object||null; }
       if(hit!==hovered){ hovered=hit; document.body.style.cursor=hit?'pointer':''; if(hit) sfx.hover(); }
@@ -985,10 +1008,7 @@
         c.material.emissiveIntensity=lerp(c.material.emissiveIntensity,on?1.1:0,0.1);
         c.scale.setScalar(lerp(c.scale.x,on?1.07:1,0.1)); });
       const lbl=hovered||centerCube;   // label the hovered/centred cube; RYNH reads "About Us" so its clickability is obvious
-      if(lbl){ const w=new THREE.Vector3(); lbl.getWorldPosition(w); w.project(camera);
-        label.textContent=lbl.userData.isCore?'About Us':lbl.userData.project.title;
-        label.style.left=((w.x*0.5+0.5)*innerWidth)+'px'; label.style.top=((-w.y*0.5+0.5)*innerHeight)+'px';
-        label.classList.add('show'); } else label.classList.remove('show');
+      if(lbl) placeLabel(lbl); else label.classList.remove('show');
     }
 
     // ---------- dive: feels like looking INTO the cube, camera stays alive ----------
@@ -1129,13 +1149,23 @@
         const m=document.getElementById('ct-mailto'); if(m)m.addEventListener('click',ev=>{ev.preventDefault();mailto();}); }
       finally{ CT.send.disabled=false; }
     });
+    let armTap=null,armT=0;   // touch two-tap: first tap presents the cube + shows its name, second tap dives (phones have no hover, so they were diving blind)
     renderer.domElement.addEventListener('click',e=>{
       sfx.resume(); burstOrbs(); sfx.blip();
       if(mode==='DETAIL'){ exitDive(); return; }
       if(mode!=='CLUSTER')return;
       ndc.x=(e.clientX/innerWidth)*2-1; ndc.y=-(e.clientY/innerHeight)*2+1;
       raycaster.setFromCamera(ndc,camera);
-      const hit=raycaster.intersectObjects(clickable,false)[0]; if(hit) diveInto(hit.object);
+      const hit=raycaster.intersectObjects(clickable,false)[0];
+      if(!hit){ if(isMobile){ armTap=null; navPick=null; } return; }
+      if(isMobile){
+        if(armTap!==hit.object){ armTap=hit.object; navPick=hit.object; sfx.hover();   // arm: float/glow via the existing navPick presentation, label via updateHover
+          clearTimeout(armT); armT=setTimeout(()=>{ if(navPick===armTap) navPick=null; armTap=null; },3500); return; }
+        clearTimeout(armT); const c=armTap; armTap=null; navPick=null;
+        if(!c.userData.isCore){ c.position.set(c.userData.hx,c.userData.homeY,c.userData.hz); c.scale.setScalar(1); }   // same reset the menu click does before diving
+        diveInto(c); return;
+      }
+      diveInto(hit.object);
     });
 
     let rzW=innerWidth,rzH=innerHeight;
