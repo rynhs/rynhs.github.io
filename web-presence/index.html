@@ -10,8 +10,8 @@
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
 <meta name="theme-color" content="#05070c" />
 <link rel="canonical" href="https://rynh.net/web-presence/" />
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=2" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
 <meta property="og:type" content="website" />
@@ -446,7 +446,6 @@
       <div class="eyebrow" id="d-eyebrow"></div>
       <h3 id="d-title"></h3>
       <p class="blurb" id="d-blurb"></p>
-      <div class="tags" id="d-tags"></div>
       <div class="actions" id="d-actions"></div>
     </div>
   </div>
@@ -1112,10 +1111,9 @@
       if(k>=1){ if(dive.phase==='in'){ const c=dive.cube; dive=null; finishIn(c); } else { dive=null; finishOut(); } }
     }
 
-    const D={el:document.getElementById('detail'),card:document.querySelector('#detail .card'),eye:document.getElementById('d-eyebrow'),title:document.getElementById('d-title'),blurb:document.getElementById('d-blurb'),tags:document.getElementById('d-tags'),actions:document.getElementById('d-actions')};
+    const D={el:document.getElementById('detail'),card:document.querySelector('#detail .card'),eye:document.getElementById('d-eyebrow'),title:document.getElementById('d-title'),blurb:document.getElementById('d-blurb'),actions:document.getElementById('d-actions')};
     function openPanel(p){
       D.eye.textContent=p.kind; D.eye.style.color=p.accent; D.card.style.setProperty('--accent',p.accent); D.title.textContent=p.title; D.blurb.textContent=p.blurb;
-      D.tags.innerHTML=(p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');   // the capability chips already in SERVICES data (CSS existed, was only used by the no-JS fallback)
       const src=(p.isCore?'RYNH / Ryan':p.title).replace(/"/g,'');
       D.actions.innerHTML=`<button class="btn btn-go" data-contact="${src}">Let's talk →</button><button class="btn btn-ghost" data-close>Back to the cluster</button>`;
       D.el.classList.add('is-open');
